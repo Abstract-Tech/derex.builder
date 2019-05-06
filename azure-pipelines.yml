@@ -2,6 +2,20 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+  - script: docker build buildah -t buildah
+    displayName: 'Build Buildah image'
+
+  - script: |
+      docker run \
+        --rm --privileged --security-opt="seccomp=unconfined" \
+        --cap-add=ALL \
+        -v /var/lib/containers/:/var/lib/containers/:rw,Z \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v $(pwd)/openedx-alpine:/openedx-alpine \
+        buildah \
+        /openedx-alpine/openedx-build/build.sh
+    displayName: 'Build open edx image with buildah'
+
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.7'
