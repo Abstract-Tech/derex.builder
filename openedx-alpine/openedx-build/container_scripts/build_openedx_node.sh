@@ -3,7 +3,7 @@ set -e
 set -x
 
 DIR=$(dirname "$(readlink -f "$0")")
-
+[ -x /usr/bin/node ] || apk add nodejs
 [ -x /openedx/nodeenv/bin/npm ] || nodeenv /openedx/nodeenv --node=8.9.3 --prebuilt
 
 cd /openedx/edx-platform
@@ -25,4 +25,5 @@ openedx-assets collect --settings=derek.assets
 rm -r \
     /openedx/nodeenv/ `# 137.3M` \
     /openedx/edx-platform/node_modules/ `# 368.9M` \
-    /openedx/staticfiles/*/node_modules `# 54.2M` \
+    /openedx/staticfiles/*/node_modules `# 54.2M`
+apk del nodejs # 52M
