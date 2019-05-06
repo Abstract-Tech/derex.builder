@@ -12,9 +12,9 @@ steps:
       vstsFeed: '8b1737d6-762a-438d-acf4-e55593dc7819'
 
   - script: |
-    set -x
-    mkdir -p cache/pip-alpine cache/apk cache/npm
-    docker run \
+      set -x
+      mkdir -p cache/pip-alpine cache/apk cache/npm
+      docker run \
         --rm --privileged --security-opt="seccomp=unconfined" \
         --cap-add=ALL \
         -v /var/lib/containers/:/var/lib/containers/:rw,Z \
