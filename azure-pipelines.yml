@@ -5,23 +5,34 @@ steps:
   - script: docker build buildah -t buildah
     displayName: 'Build Buildah image'
 
+  - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreCacheV1.RestoreCache@1
+    inputs:
+      keyfile: 'openedx-alpine/.cache_id'
+      targetfolder: 'cache/'
+      vstsFeed: '8b1737d6-762a-438d-acf4-e55593dc7819'
+
   - script: |
     set -x
-    mkdir -p /var/cache/pip-alpine
-    mkdir -p /var/cache/apk
-    mkdir -p /var/cache/npm
-      docker run \
+    mkdir -p cache/pip-alpine cache/apk cache/npm
+    docker run \
         --rm --privileged --security-opt="seccomp=unconfined" \
         --cap-add=ALL \
         -v /var/lib/containers/:/var/lib/containers/:rw,Z \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v $(pwd)/openedx-alpine:/openedx-alpine \
-        -v /var/cache/pip-alpine:/var/cache/pip-alpine \
-        -v /var/cache/apk:/var/cache/apk \
-        -v /var/cache/npm:/var/cache/npm \
+        -v $(pwd)/cache/pip-alpine:/var/cache/pip-alpine \
+        -v $(pwd)/cache/apk:/var/cache/apk \
+        -v $(pwd)/cache/npm:/var/cache/npm \
         buildah \
         /openedx-alpine/openedx-build/build.sh
     displayName: 'Build open edx image with buildah'
+
+  - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
+    inputs:
+      keyfile: 'openedx-alpine/.cache_id'
+      targetfolder: 'cache/'
+      vstsFeed: '8b1737d6-762a-438d-acf4-e55593dc7819'
+    condition: ne(variables['CacheRestored'], 'true')
 
   - task: UsePythonVersion@0
     inputs:
@@ -37,3 +48,4 @@ steps:
       pip install pytest pytest-azurepipelines
       pytest
     displayName: 'pytest'
+
