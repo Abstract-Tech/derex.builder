@@ -5,11 +5,6 @@ set -x
 DIR=$(dirname $(readlink -f "$0"))
 . "${DIR}/variables.sh"
 
-mkdir -p ${PIP_CACHE}
-mkdir -p ${APK_CACHE}
-mkdir -p ${NPM_CACHE}
-
-
 "${DIR}/build_base.sh"
 
 "${DIR}/build_buildwheels.sh"
