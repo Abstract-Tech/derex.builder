@@ -13,7 +13,6 @@ steps:
 
   - script: |
       set -x
-      mkdir -p cache/pip-alpine cache/apk cache/npm
       docker run \
         --rm --privileged --security-opt="seccomp=unconfined" \
         --cap-add=ALL \
@@ -21,12 +20,12 @@ steps:
         -v /var/run/docker.sock:/var/run/docker.sock \
         -v $(pwd):$(pwd) \
         derex/buildah \
-        "sh -c '
+        bash -c "
           cd $(pwd)
           python3 setup.py install
           pip3 install pytest pytest-azurepipelines
           pytest tests
-        '"
+        "
     displayName: 'Run tests inside buildah image'
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
