@@ -9,7 +9,7 @@ steps:
     inputs:
       keyfile: 'derex/builder/openedx-alpine/.cache_id'
       targetfolder: 'cache/'
-      vstsFeed: '8b1737d6-762a-438d-acf4-e55593dc7819'
+      vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
 
   - script: |
       set -x
@@ -32,6 +32,6 @@ steps:
     inputs:
       keyfile: 'derex/builder/openedx-alpine/.cache_id'
       targetfolder: 'cache/'
-      vstsFeed: '8b1737d6-762a-438d-acf4-e55593dc7819'
+      vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
     condition: ne(variables['CacheRestored'], 'true')
 
