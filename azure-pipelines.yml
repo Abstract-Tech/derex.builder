@@ -2,8 +2,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - script: docker build buildah -t buildah
-    displayName: 'Build Buildah image'
+  - script: docker pull derex/buildah
+    displayName: 'Pull Buildah image'
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreCacheV1.RestoreCache@1
     inputs:
@@ -19,13 +19,15 @@ steps:
         --cap-add=ALL \
         -v /var/lib/containers/:/var/lib/containers/:rw,Z \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v $(pwd)/derex/builder/openedx-alpine:/openedx-alpine \
-        -v $(pwd)/cache/pip-alpine:/var/cache/pip-alpine \
-        -v $(pwd)/cache/apk:/var/cache/apk \
-        -v $(pwd)/cache/npm:/var/cache/npm \
-        buildah \
-        /openedx-alpine/openedx-build/build.sh
-    displayName: 'Build open edx image with buildah'
+        -v $(pwd):$(pwd) \
+        derex/buildah \
+        "sh -c '
+          cd $(pwd)
+          python3 setup.py install
+          pip3 install pytest pytest-azurepipelines
+          pytest tests
+        '"
+    displayName: 'Run tests inside buildah image'
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
     inputs:
@@ -33,19 +35,4 @@ steps:
       targetfolder: 'cache/'
       vstsFeed: '8b1737d6-762a-438d-acf4-e55593dc7819'
     condition: ne(variables['CacheRestored'], 'true')
-
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.7'
-    displayName: 'Use Python 3.7'
-
-  - script: |
-      python -m pip install --upgrade pip
-      pip install -r requirements.txt
-    displayName: 'Install dependencies'
-
-  - script: |
-      pip install pytest pytest-azurepipelines
-      pytest
-    displayName: 'pytest'
 

@@ -24,5 +24,11 @@ RUN add-apt-repository \
 
 RUN apt-get install -y docker-ce docker-ce-cli containerd.io
 
+RUN apt-get install -y python3-pip
+RUN apt-get install -y sudo
+ENV LC_ALL=C.UTF-8
+ENV export LANG=C.UTF-8
+
+
 # Use with:
 # docker run --rm --privileged --security-opt="seccomp=unconfined" --cap-add=ALL -v /var/lib/containers/:/var/lib/containers/:rw,Z -ti buildah
