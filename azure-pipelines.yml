@@ -42,3 +42,16 @@ steps:
       vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
     condition: ne(variables['CacheRestored'], 'true')
 
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+    displayName: 'Use Python 3.7'
+
+  - script: pip install --cache-dir $(pwd)/cache/pip -r requirements_dev.txt
+    displayName: 'Install dev tools'
+
+  - script: black --check derex tests/
+    displayName: 'Chack black compliance'
+
+  - script: isort -rc --settings-path .isort.cf --check derex tests
+    displayName: 'Chack isort compliance'
