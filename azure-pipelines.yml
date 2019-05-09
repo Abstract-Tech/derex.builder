@@ -29,7 +29,7 @@ steps:
           pip3 install --cache-dir $(pwd)/cache/pip -r requirements.txt
           python3 setup.py install
           pip3 install pytest-azurepipelines
-          pytest tests --cov=derex --cov-report html
+          pytest tests --cov=derex --cov-report html --cov-branch
           chown -Rv $(id -u) $(pwd)/cache $(pwd)/htmlcov
         "
     displayName: 'Run tests inside buildah image'
