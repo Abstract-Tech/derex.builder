@@ -4,6 +4,7 @@
 """Tests for `derex.builder` package."""
 
 import os
+from pathlib import PosixPath
 
 import pkg_resources
 
@@ -56,6 +57,15 @@ def test_hash_conf(buildah_base: BuildahBuilder):
     initial = buildah_base.hash_conf()
     buildah_base.conf["foo"] = "bar"
     assert buildah_base.hash_conf() != initial
+
+
+def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
+    tmp_file = tmp_path / "script.sh"
+    tmp_file.write_text("foo")
+    buildah_base.conf["scripts"] = [tmp_file.as_posix()]
+    initial = buildah_base.hash()
+    tmp_file.write_text("bar")
+    assert buildah_base.hash() != initial
 
 
 @pytest.fixture

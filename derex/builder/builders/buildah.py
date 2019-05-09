@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import subprocess
+from pathlib import PosixPath
 from typing import Union
 
 from derex.builder.builders.base import BaseBuilder
@@ -37,7 +38,14 @@ class BuildahBuilder(BaseBuilder):
         return False
 
     def hash(self) -> str:
-        return self.hash_conf()
+        """Return a hash representing this builder.
+        The hash should is built from the conf and the content of the scripts.
+        """
+        texts = [self.hash_conf()]
+        for script in self.conf["scripts"]:
+            path = PosixPath(self.path, script)
+            texts.append(path.read_text())
+        return self.mkhash("\n".join(texts))
 
     def run(self):
         container = self.buildah("from", self.source)
@@ -54,7 +62,7 @@ class BuildahBuilder(BaseBuilder):
         self.buildah("push", self.dest, f"docker-daemon:{self.dest}")
         self.buildah("rmi", self.dest)
 
-    def buildah(self, *args):
+    def buildah(self, *args: str) -> str:
         """Utility function to invoke buildah
         """
         return (
