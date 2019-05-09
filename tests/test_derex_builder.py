@@ -39,12 +39,8 @@ def test_command_line_interface():
     assert "--help  Show this message and exit." in help_result.output
 
 
-def test_buildah_builder():
-    from derex.builder.builders.buildah import BuildahBuilder
-
-    test_builder_spec = get_test_path("fixtures/buildah_base/")
-    test_builder = BuildahBuilder(test_builder_spec)
-    test_builder.run()
+def test_buildah_builder(buildah_base):
+    buildah_base.run()
 
     # Check the generated docker image
     client = docker.from_env()
@@ -53,3 +49,17 @@ def test_buildah_builder():
     )
     assert response == b"Hello world\n"
     client.images.remove("derex/hello_world:latest")
+
+
+@pytest.fixture
+def buildah_base():
+    from derex.builder.builders.buildah import BuildahBuilder
+
+    buildah_base_spec = get_test_path("fixtures/buildah_base/")
+    return BuildahBuilder(buildah_base_spec)
+
+
+def test_hash_conf(buildah_base):
+    initial = buildah_base.hash_conf()
+    buildah_base.conf["foo"] = "bar"
+    assert buildah_base.hash_conf() != initial

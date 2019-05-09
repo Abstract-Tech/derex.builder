@@ -36,6 +36,9 @@ class BuildahBuilder(BaseBuilder):
             return True
         return False
 
+    def hash(self) -> str:
+        return self.hash_conf()
+
     def run(self):
         container = self.buildah("from", self.source)
         buildah = lambda cmd, *args: self.buildah(cmd, container, *args)

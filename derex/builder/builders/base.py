@@ -1,5 +1,7 @@
 """Base class for yaml-based image definitions
 """
+import hashlib
+import json
 import os
 from abc import ABC, abstractmethod
 
@@ -31,3 +33,12 @@ class BaseBuilder(ABC):
         The hash should be constructed so that any change that would
         result in a functionally different image changes the hash.
         """
+
+    def hash_conf(self) -> str:
+        """Return a hash representing this builder's config.
+        The hash is constructed after parsing the file, so comments
+        or key ordering is not relevant to hashing
+        """
+        m = hashlib.sha256()
+        m.update(json.dumps(self.conf, sort_keys=True).encode("utf-8"))
+        return m.hexdigest()
