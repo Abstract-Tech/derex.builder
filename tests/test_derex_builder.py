@@ -13,6 +13,7 @@ import pytest  # type: ignore
 from click.testing import CliRunner
 from derex.builder import cli
 from derex.builder.builders.buildah import BuildahBuilder
+from pytest_mock import MockFixture  # type: ignore
 
 
 def get_test_path(resource_path: str) -> str:
@@ -72,7 +73,7 @@ def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     assert buildah_base.hash() != initial
 
 
-def test_resolve(buildah_base: BuildahBuilder, mocker):
+def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
     list_buildah_images = mocker.patch(
         "derex.builder.builders.buildah.BuildahBuilder.list_buildah_images"
     )
@@ -110,6 +111,19 @@ def test_dependent_container():
     )
     assert response == b"Hello all\n"
     client.images.remove(buildah_dependent.docker_image())
+
+
+def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixture):
+    check_output = mocker.patch(
+        "derex.builder.builders.buildah.subprocess.check_output"
+    )
+    getuid = mocker.patch("derex.builder.builders.buildah.os.getuid")
+    getuid.return_value = 1000
+    buildah_base.buildah()
+    assert check_output.call_args[0][0] == ["sudo", "buildah"]
+    getuid.return_value = 0
+    buildah_base.buildah()
+    assert check_output.call_args[0][0] == ["buildah"]
 
 
 @pytest.fixture

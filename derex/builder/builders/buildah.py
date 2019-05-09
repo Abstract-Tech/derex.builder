@@ -100,11 +100,10 @@ class BuildahBuilder(BaseBuilder):
     def buildah(self, *args: str) -> str:
         """Utility function to invoke buildah
         """
-        return (
-            subprocess.check_output(["sudo", "buildah"] + list(args))
-            .decode("utf-8")
-            .strip()
-        )
+        cmd = ["buildah"]
+        if os.getuid() != 0:
+            cmd = ["sudo"] + cmd
+        return subprocess.check_output(cmd + list(args)).decode("utf-8").strip()
 
 
 class ConfigurationError(Exception):
