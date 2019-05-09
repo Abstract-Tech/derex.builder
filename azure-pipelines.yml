@@ -24,6 +24,7 @@ steps:
         bash -c "
           cd $(pwd)
           mkdir -p $(pwd)/cache/pip
+          chown -R root:root $(pwd)/cache/pip
           pip3 install --cache-dir $(pwd)/cache/pip -r requirements_dev.txt
           pip3 install --cache-dir $(pwd)/cache/pip -r requirements.txt
           python3 setup.py install
