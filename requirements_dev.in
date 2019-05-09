@@ -4,6 +4,7 @@ isort
 mypy
 pip
 pip-tools
+pre-commit
 pytest
 pytest-cov
 Sphinx
