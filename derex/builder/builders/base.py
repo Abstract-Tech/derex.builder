@@ -6,7 +6,7 @@ import os
 from abc import ABC, abstractmethod
 
 import yaml
-from zope.dottedname.resolve import resolve
+from zope.dottedname.resolve import resolve  # type: ignore
 
 
 class BaseBuilder(ABC):
