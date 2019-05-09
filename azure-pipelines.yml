@@ -35,6 +35,8 @@ steps:
 
   - script: |
       sudo chown -Rv $(id -u) ${PWD}/cache ${PWD}/tests;
+      npm install juice
+      for filename in tests/htmlcov/*.html; do $(npm bin)/juice $filename $filename; done
       echo "##vso[codecoverage.publish codecoveragetool=Cobertura;summaryfile=$(pwd)/tests/test-cov.xml;reportdirectory=${PWD}/tests/htmlcov;]"
       ls -lR tests/htmlcov
     displayName: Change owner of last step output and republish coverage tests
