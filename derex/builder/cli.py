@@ -4,17 +4,19 @@
 import sys
 
 import click
+from derex.builder.builders.base import create_builder
 
 
-@click.command()
+@click.group()
 def main(args=None):
-    """Console script for derex.builder."""
-    click.echo(
-        "Replace this message by putting your code into " "derex.builder.cli.main"
-    )
-    click.echo("See click documentation at http://click.pocoo.org/")
-    return 0
+    """Build docker images based on yaml config files and shell scripts."""
 
 
-if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover
+@click.argument("path")
+@main.command()
+def resolve(path: str):
+    """Build a docker image based on a directory containing a spec.yml file.
+    """
+
+    click.echo(f"Building {path}")
+    create_builder(path).resolve()
