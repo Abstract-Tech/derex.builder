@@ -1,8 +1,10 @@
+coverage
 black
 isort
 mypy
 pip
 pip-tools
 pytest
+pytest-cov
 Sphinx
 wheel

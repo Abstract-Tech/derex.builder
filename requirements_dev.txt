@@ -13,6 +13,7 @@ black==19.3b0
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
 click==7.0                # via black, pip-tools
+coverage==4.5.3
 docutils==0.14            # via sphinx
 idna==2.8                 # via requests
 imagesize==1.1.0          # via sphinx
@@ -28,6 +29,7 @@ pluggy==0.11.0            # via pytest
 py==1.8.0                 # via pytest
 pygments==2.4.0           # via sphinx
 pyparsing==2.4.0          # via packaging
+pytest-cov==2.7.1
 pytest==4.4.2
 pytz==2019.1              # via babel
 requests==2.21.0          # via sphinx
