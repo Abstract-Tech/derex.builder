@@ -2,8 +2,7 @@ builder:
   class: derex.builder.builders.BuildahBuilder
 
 source:
-  type: derex-relative
-  path: buildah_base
+  type: invalid
 
 scripts:
   - hello_all.sh

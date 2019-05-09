@@ -63,11 +63,17 @@ def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
 
 def test_create_builder(buildah_base):
     from derex.builder.builders.base import create_builder
+    from derex.builder.builders.buildah import ConfigurationError
 
     buildah_base_spec = get_test_path("fixtures/buildah_base/")
-    found = create_builder(buildah_base_spec)
-    assert found.hash() == buildah_base.hash()
-    assert type(found) == type(buildah_base)
+    base = create_builder(buildah_base_spec)
+    assert base.hash() == buildah_base.hash()
+    assert type(base) == type(buildah_base)
+
+    buildah_invalid_spec = get_test_path("fixtures/buildah_invalid/")
+    invalid = create_builder(buildah_invalid_spec)
+    with pytest.raises(ConfigurationError):
+        invalid.resolve_base_image()
 
 
 def test_dependent_container():
