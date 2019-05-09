@@ -7,7 +7,7 @@ steps:
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreCacheV1.RestoreCache@1
     inputs:
-      keyfile: '.cache_id'
+      keyfile: 'requirements*.txt'
       targetfolder: 'cache'
       verbosity: 'Trace'
       vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
@@ -36,7 +36,7 @@ steps:
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
     inputs:
-      keyfile: '.cache_id'
+      keyfile: 'requirements*.txt'
       targetfolder: 'cache'
       verbosity: 'Trace'
       vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
