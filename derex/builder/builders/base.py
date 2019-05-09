@@ -1,4 +1,4 @@
-"""Base class for yaml-based image definitions
+"""Base class and utility methods for yaml-based image definitions.
 """
 import hashlib
 import json
@@ -6,6 +6,7 @@ import os
 from abc import ABC, abstractmethod
 
 import yaml
+from zope.dottedname.resolve import resolve
 
 
 class BaseBuilder(ABC):
@@ -17,9 +18,7 @@ class BaseBuilder(ABC):
         :param file_path: A path to a directory containing a spec yaml file and other support files.
         """
         self.path = path
-        self.conf = yaml.load(
-            open(os.path.join(path, "spec.yml")), Loader=yaml.FullLoader  # type: ignore
-        )
+        self.conf = load_conf(path)
 
     @abstractmethod
     def run(self):
@@ -62,3 +61,16 @@ class BaseBuilder(ABC):
         m = hashlib.sha256()
         m.update(input.encode("utf-8"))
         return m.hexdigest()
+
+
+def create_builder(path: str) -> BaseBuilder:
+    """Given a path to a builder configuration, it instantiates the relevant builder.
+    """
+    conf = load_conf((path))
+    return resolve(conf["builder"]["class"])(path)
+
+
+def load_conf(path: str) -> dict:
+    return yaml.load(
+        open(os.path.join(path, "spec.yml")), Loader=yaml.FullLoader  # type: ignore
+    )

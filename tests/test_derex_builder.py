@@ -43,6 +43,7 @@ def test_command_line_interface():
 
 def test_buildah_builder(buildah_base: BuildahBuilder):
     buildah_base.run()
+    buildah_base.push_to_docker()
 
     # Check the generated docker image
     client = docker.from_env()
@@ -87,19 +88,28 @@ def test_resolve(buildah_base: BuildahBuilder, mocker):
     run.assert_not_called()
 
 
-@pytest.mark.skip
+def test_create_builder(buildah_base):
+    from derex.builder.builders.base import create_builder
+
+    buildah_base_spec = get_test_path("fixtures/buildah_base/")
+    found = create_builder(buildah_base_spec)
+    assert found.hash() == buildah_base.hash()
+    assert type(found) == type(buildah_base)
+
+
 def test_dependent_container():
     buildah_dependent_spec = get_test_path("fixtures/buildah_dependent/")
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
 
     buildah_dependent.run()
+    buildah_dependent.push_to_docker()
     # Check the generated docker image
     client = docker.from_env()
     response = client.containers.run(
-        buildah_base.docker_image(), "cat /hello_all.txt", remove=True
+        buildah_dependent.docker_image(), "cat /hello_all.txt", remove=True
     )
-    assert response == b"Hello everybody\n"
-    client.images.remove(buildah_base.docker_image())
+    assert response == b"Hello all\n"
+    client.images.remove(buildah_dependent.docker_image())
 
 
 @pytest.fixture

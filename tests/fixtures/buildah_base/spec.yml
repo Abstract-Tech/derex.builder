@@ -1,5 +1,5 @@
 builder:
-  class: derex.builder.BuildahBuilder
+  class: derex.builder.builders.BuildahBuilder
 
 source: alpine:3.9
 

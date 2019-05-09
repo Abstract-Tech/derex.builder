@@ -5,9 +5,9 @@ import logging
 import os
 import subprocess
 from pathlib import PosixPath
-from typing import List, Union
+from typing import Dict, List, Union
 
-from derex.builder.builders.base import BaseBuilder
+from derex.builder.builders.base import BaseBuilder, create_builder
 
 logger = logging.getLogger(__name__)
 
@@ -53,11 +53,23 @@ class BuildahBuilder(BaseBuilder):
     def docker_image(self):
         return self.dest
 
-    def resolve_base_image(self):
-        """Makes sure the base image is available
+    def resolve_base_image(self) -> str:
+        """Makes sure the base image is available and returns its name.
         """
-        if not self.available_buildah():
-            self.run()
+        if not isinstance(self.source, str):
+            builder = create_builder(self.resolve_source_path(self.source))
+            builder.resolve()
+            return builder.docker_image()
+        else:  # The source is a string, so it should be available in the docker hub
+            return self.source  # We might pull the image here
+
+    def resolve_source_path(self, source: Dict) -> str:
+        """Given the `source` part of a configuration, find the directory it refers to.
+        """
+        if source["type"] == "derex-relative":
+            return os.path.join(os.path.dirname(self.path), source["path"])
+        else:
+            raise ConfigurationError(f'Unknown type: {source["type"]}')
 
     def resolve(self):
         """Try to pull or build the image if not already present.
@@ -68,10 +80,7 @@ class BuildahBuilder(BaseBuilder):
     def run(self):
         """Builds the image specified by this builder.
         """
-        if isinstance(self.source, str):
-            base_image = self.source  # The base image is explicitly specified
-        else:
-            base_image = self.resolve_base_image()
+        base_image = self.resolve_base_image()
         container = self.buildah("from", base_image)
         buildah = lambda cmd, *args: self.buildah(cmd, container, *args)
         script_dir = "/opt/derex/bin"
@@ -83,8 +92,10 @@ class BuildahBuilder(BaseBuilder):
             buildah("run", "chmod", "a+x", dest)
             buildah("run", dest)
         self.buildah("commit", "--rm", container, self.dest)
+
+    def push_to_docker(self):
+        self.resolve()
         self.buildah("push", self.dest, f"docker-daemon:{self.dest}")
-        self.buildah("rmi", self.dest)
 
     def buildah(self, *args: str) -> str:
         """Utility function to invoke buildah
@@ -94,3 +105,7 @@ class BuildahBuilder(BaseBuilder):
             .decode("utf-8")
             .strip()
         )
+
+
+class ConfigurationError(Exception):
+    pass
