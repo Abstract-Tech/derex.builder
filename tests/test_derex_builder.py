@@ -5,12 +5,13 @@
 
 import os
 
-import docker  # type: ignore
 import pkg_resources
+
+import docker  # type: ignore
 import pytest  # type: ignore
 from click.testing import CliRunner
-
 from derex.builder import cli
+from derex.builder.builders.buildah import BuildahBuilder
 
 
 def get_test_path(resource_path: str) -> str:
@@ -39,7 +40,7 @@ def test_command_line_interface():
     assert "--help  Show this message and exit." in help_result.output
 
 
-def test_buildah_builder(buildah_base):
+def test_buildah_builder(buildah_base: BuildahBuilder):
     buildah_base.run()
 
     # Check the generated docker image
@@ -51,15 +52,13 @@ def test_buildah_builder(buildah_base):
     client.images.remove("derex/hello_world:latest")
 
 
-@pytest.fixture
-def buildah_base():
-    from derex.builder.builders.buildah import BuildahBuilder
-
-    buildah_base_spec = get_test_path("fixtures/buildah_base/")
-    return BuildahBuilder(buildah_base_spec)
-
-
-def test_hash_conf(buildah_base):
+def test_hash_conf(buildah_base: BuildahBuilder):
     initial = buildah_base.hash_conf()
     buildah_base.conf["foo"] = "bar"
     assert buildah_base.hash_conf() != initial
+
+
+@pytest.fixture
+def buildah_base() -> BuildahBuilder:
+    buildah_base_spec = get_test_path("fixtures/buildah_base/")
+    return BuildahBuilder(buildah_base_spec)
