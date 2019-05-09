@@ -7,8 +7,9 @@ steps:
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreCacheV1.RestoreCache@1
     inputs:
-      keyfile: 'derex/builder/openedx-alpine/.cache_id'
-      targetfolder: 'cache/'
+      keyfile: '.cache_id'
+      targetfolder: 'cache'
+      verbosity: 'Trace'
       vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
 
   - script: |
@@ -22,16 +23,21 @@ steps:
         derex/buildah \
         bash -c "
           cd $(pwd)
+          mkdir -p $(pwd)/cache/pip
+          pip3 install --cache-dir $(pwd)/cache/pip -r requirements_dev.txt
+          pip3 install --cache-dir $(pwd)/cache/pip -r requirements.txt
           python3 setup.py install
-          pip3 install pytest pytest-azurepipelines
+          pip3 install pytest-azurepipelines
           pytest tests
+          chown -Rv $(id -u) $(pwd)/cache
         "
     displayName: 'Run tests inside buildah image'
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
     inputs:
-      keyfile: 'derex/builder/openedx-alpine/.cache_id'
-      targetfolder: 'cache/'
+      keyfile: '.cache_id'
+      targetfolder: 'cache'
+      verbosity: 'Trace'
       vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
     condition: ne(variables['CacheRestored'], 'true')
 
