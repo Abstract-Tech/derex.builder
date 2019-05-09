@@ -16,7 +16,7 @@ class BaseBuilder(ABC):
         """
         self.path = path
         self.conf = yaml.load(
-            open(os.path.join(path, "spec.yml")), Loader=yaml.FullLoader
+            open(os.path.join(path, "spec.yml")), Loader=yaml.FullLoader  # type: ignore
         )
 
     @abstractmethod

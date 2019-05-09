@@ -5,9 +5,9 @@
 
 import os
 
-import docker
+import docker  # type: ignore
 import pkg_resources
-import pytest
+import pytest  # type: ignore
 from click.testing import CliRunner
 
 from derex.builder import cli
