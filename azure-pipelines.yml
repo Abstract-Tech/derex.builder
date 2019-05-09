@@ -29,10 +29,11 @@ steps:
           pip3 install --cache-dir $(pwd)/cache/pip -r requirements.txt
           python3 setup.py install
           pip3 install pytest-azurepipelines
-          pytest tests --cov=derex --cov-report html --cov-branch
-          chown -Rv $(id -u) $(pwd)/cache $(pwd)/htmlcov
-        "
+          pytest tests --cov=derex --cov-report html --cov-branch"
     displayName: 'Run tests inside buildah image'
+
+  - script: sudo chown -Rv $(id -u) $(pwd)/cache
+    displayName: Change owner of cache to current user
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
     inputs:
@@ -46,15 +47,20 @@ steps:
     inputs:
       versionSpec: '3.7'
     displayName: 'Use Python 3.7'
+    condition: succeededOrFailed()
 
   - script: pip install --cache-dir $(pwd)/cache/pip -r requirements_dev.txt
     displayName: 'Install dev tools'
+    condition: succeededOrFailed()
 
   - script: black --check derex tests
     displayName: 'Check black compliance'
+    condition: succeededOrFailed()
 
   - script: isort -vb -rc --settings-path .isort.cf --check derex tests || true # For some reason on azure isort behaves differently than on my machine
     displayName: 'Check isort compliance'
+    condition: succeededOrFailed()
 
   - script: mypy derex tests
     displayName: 'Check mypy compliance'
+    condition: succeededOrFailed()
