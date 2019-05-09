@@ -34,6 +34,21 @@ class BaseBuilder(ABC):
         result in a functionally different image changes the hash.
         """
 
+    @abstractmethod
+    def resolve(self):
+        """Makes sure that the image represented by this builder is locally available.
+        """
+
+    def docker_tag(self) -> str:
+        """Returns a string usable as docker tag, derived from the hash.
+        """
+        return self.hash()[:10]
+
+    @abstractmethod
+    def docker_image(self) -> str:
+        """Returns a string usable as docker image, derived from the configuration and the tag.
+        """
+
     def hash_conf(self) -> str:
         """Return a hash representing this builder's config.
         The hash is constructed after parsing the file, so comments

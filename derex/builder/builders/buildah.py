@@ -5,7 +5,7 @@ import logging
 import os
 import subprocess
 from pathlib import PosixPath
-from typing import Union
+from typing import List, Union
 
 from derex.builder.builders.base import BaseBuilder
 
@@ -21,7 +21,7 @@ class BuildahBuilder(BaseBuilder):
         super().__init__(*args, **kwargs)
         self.scripts = self.conf["scripts"]
         self.source = self.conf["source"]
-        self.dest = self.conf["dest"] + ":latest"
+        self.dest = f'{self.conf["dest"]}:{self.docker_tag()}'
 
     def validate(self):
         """Check that all resources referenced from the yaml file actually exist.
@@ -30,12 +30,15 @@ class BuildahBuilder(BaseBuilder):
     def available_buildah(self) -> bool:
         """Returns True if an image generated with this builder can be found in the local buildah registry.
         """
-        images = json.loads(self.buildah("images", "--json"))
-        if f"localhost/{self.dest}" in sum(
-            (el["names"] for el in images if el["names"]), []
-        ):
+        if f"localhost/{self.dest}" in self.list_buildah_images():
             return True
         return False
+
+    def list_buildah_images(self) -> List[str]:
+        """Returns a list of all images locally available to buildah
+        """
+        images = json.loads(self.buildah("images", "--json"))
+        return sum((el["names"] for el in images if el["names"]), [])
 
     def hash(self) -> str:
         """Return a hash representing this builder.
@@ -47,8 +50,29 @@ class BuildahBuilder(BaseBuilder):
             texts.append(path.read_text())
         return self.mkhash("\n".join(texts))
 
+    def docker_image(self):
+        return self.dest
+
+    def resolve_base_image(self):
+        """Makes sure the base image is available
+        """
+        if not self.available_buildah():
+            self.run()
+
+    def resolve(self):
+        """Try to pull or build the image if not already present.
+        """
+        if not self.available_buildah():
+            self.run()
+
     def run(self):
-        container = self.buildah("from", self.source)
+        """Builds the image specified by this builder.
+        """
+        if isinstance(self.source, str):
+            base_image = self.source  # The base image is explicitly specified
+        else:
+            base_image = self.resolve_base_image()
+        container = self.buildah("from", base_image)
         buildah = lambda cmd, *args: self.buildah(cmd, container, *args)
         script_dir = "/opt/derex/bin"
         buildah("run", "mkdir", "-p", script_dir)

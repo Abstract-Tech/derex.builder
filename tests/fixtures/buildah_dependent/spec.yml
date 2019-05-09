@@ -1,0 +1,11 @@
+builder:
+  class: derex.builder.BuildahBuilder
+
+source:
+  type: derex-relative
+  path: buildah_base
+
+scripts:
+  - hello_all.sh
+
+dest: derex/hello_everybody

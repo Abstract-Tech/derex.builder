@@ -47,10 +47,13 @@ def test_buildah_builder(buildah_base: BuildahBuilder):
     # Check the generated docker image
     client = docker.from_env()
     response = client.containers.run(
-        "derex/hello_world:latest", "cat /hello.txt", remove=True
+        buildah_base.docker_image(), "cat /hello.txt", remove=True
     )
     assert response == b"Hello world\n"
-    client.images.remove("derex/hello_world:latest")
+    client.images.remove(buildah_base.docker_image())
+
+    images = buildah_base.list_buildah_images()
+    assert f"docker.io/library/{buildah_base.source}" in images
 
 
 def test_hash_conf(buildah_base: BuildahBuilder):
@@ -66,6 +69,37 @@ def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     initial = buildah_base.hash()
     tmp_file.write_text("bar")
     assert buildah_base.hash() != initial
+
+
+def test_resolve(buildah_base: BuildahBuilder, mocker):
+    list_buildah_images = mocker.patch(
+        "derex.builder.builders.buildah.BuildahBuilder.list_buildah_images"
+    )
+    list_buildah_images.return_value = []  # When the image is not available locally...
+    run = mocker.patch("derex.builder.builders.buildah.BuildahBuilder.run")
+    buildah_base.resolve()
+    run.assert_called_once()  # ...it will be built
+
+    # If the image is present locally it will not be built
+    list_buildah_images.return_value = [f"localhost/{buildah_base.docker_image()}"]
+    buildah_base.resolve()
+    run.reset_mock()
+    run.assert_not_called()
+
+
+@pytest.mark.skip
+def test_dependent_container():
+    buildah_dependent_spec = get_test_path("fixtures/buildah_dependent/")
+    buildah_dependent = BuildahBuilder(buildah_dependent_spec)
+
+    buildah_dependent.run()
+    # Check the generated docker image
+    client = docker.from_env()
+    response = client.containers.run(
+        buildah_base.docker_image(), "cat /hello_all.txt", remove=True
+    )
+    assert response == b"Hello everybody\n"
+    client.images.remove(buildah_base.docker_image())
 
 
 @pytest.fixture
