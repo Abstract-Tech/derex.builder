@@ -21,3 +21,10 @@ class BaseBuilder(ABC):
         """Run the builder based on its configuration.
         Concrete classes should override this method.
         """
+
+    @abstractmethod
+    def hash(self) -> str:
+        """Return a hash representing this builder.
+        The hash should be constructed so that any change that would
+        result in a functionally different image changes the hash.
+        """

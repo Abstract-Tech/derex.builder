@@ -26,12 +26,17 @@ class BuildahBuilder(BaseBuilder):
         """Check that all resources referenced from the yaml file actually exist.
         """
 
-    def run(self) -> Union[ImageFound, None]:
+    def available_buildah(self) -> bool:
+        """Returns True if an image generated with this builder can be found in the local buildah registry.
+        """
         images = json.loads(self.buildah("images", "--json"))
         if f"localhost/{self.dest}" in sum(
             (el["names"] for el in images if el["names"]), []
         ):
-            return ImageFound
+            return True
+        return False
+
+    def run(self):
         container = self.buildah("from", self.source)
         buildah = lambda cmd, *args: self.buildah(cmd, container, *args)
         script_dir = "/opt/derex/bin"
