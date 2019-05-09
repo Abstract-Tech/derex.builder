@@ -19,21 +19,21 @@ steps:
         --cap-add=ALL \
         -v /var/lib/containers/:/var/lib/containers/:rw,Z \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v $(pwd):$(pwd) \
+        -v ${PWD}:${PWD} \
         derex/buildah \
         bash -c "
-          cd $(pwd)
-          mkdir -p $(pwd)/cache/pip
-          chown -R root:root $(pwd)/cache/pip
-          pip3 install --cache-dir $(pwd)/cache/pip -r requirements_dev.txt
-          pip3 install --cache-dir $(pwd)/cache/pip -r requirements.txt
+          cd ${PWD}
+          mkdir -p ${PWD}/cache/pip
+          chown -R root:root ${PWD}/cache/pip
+          pip3 install --cache-dir ${PWD}/cache/pip -r requirements_dev.txt
+          pip3 install --cache-dir ${PWD}/cache/pip -r requirements.txt
           python3 setup.py install
           pip3 install pytest-azurepipelines
           cd tests
           pytest --cov=derex --cov-report html --cov-report term --cov-report term-missing --cov-branch"
     displayName: 'Run tests inside buildah image'
 
-  - script: sudo chown -Rv $(id -u) $(pwd)/cache
+  - script: sudo chown -Rv $(id -u) ${PWD}/cache;
     displayName: Change owner of cache to current user
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
@@ -50,7 +50,7 @@ steps:
     displayName: 'Use Python 3.7'
     condition: succeededOrFailed()
 
-  - script: pip install --cache-dir $(pwd)/cache/pip -r requirements_dev.txt
+  - script: pip install --cache-dir ${PWD}/cache/pip -r requirements_dev.txt
     displayName: 'Install dev tools'
     condition: succeededOrFailed()
 
