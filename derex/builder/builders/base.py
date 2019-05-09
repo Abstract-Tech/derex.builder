@@ -39,6 +39,11 @@ class BaseBuilder(ABC):
         The hash is constructed after parsing the file, so comments
         or key ordering is not relevant to hashing
         """
+        return self.mkhash(json.dumps(self.conf, sort_keys=True))
+
+    def mkhash(self, input: str) -> str:
+        """Given a string, calculate its hash.
+        """
         m = hashlib.sha256()
-        m.update(json.dumps(self.conf, sort_keys=True).encode("utf-8"))
+        m.update(input.encode("utf-8"))
         return m.hexdigest()
