@@ -1,0 +1,9 @@
+builder:
+  class: derex.builder.BuildahBuilder
+
+source: alpine:3.9
+
+scripts:
+  - hello_world.sh
+
+dest: derex/hello_world
