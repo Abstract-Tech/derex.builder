@@ -50,8 +50,8 @@ steps:
   - script: pip install --cache-dir $(pwd)/cache/pip -r requirements_dev.txt
     displayName: 'Install dev tools'
 
-  - script: black --check derex tests/
-    displayName: 'Chack black compliance'
+  - script: black --check derex tests
+    displayName: 'Check black compliance'
 
-  - script: isort -rc --settings-path .isort.cf --check derex tests
-    displayName: 'Chack isort compliance'
+  - script: isort -vb -rc --settings-path .isort.cf --check derex tests
+    displayName: 'Check isort compliance'
