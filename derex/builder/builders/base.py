@@ -7,6 +7,9 @@ import yaml
 
 
 class BaseBuilder(ABC):
+    """A builder takes a configuration directory and executes it to build a docker image.
+    """
+
     def __init__(self, path: str):
         """
         :param file_path: A path to a directory containing a spec yaml file and other support files.
