@@ -33,7 +33,7 @@ steps:
           pytest --cov=derex --cov-report html --cov-report term --cov-report term-missing --cov-branch"
     displayName: 'Run tests inside buildah image'
 
-  - script: sudo chown -Rv $(id -u) ${PWD}/cache;
+  - script: sudo chown -Rv $(id -u) ${PWD}/cache; ls -lR tests/htmlcov
     displayName: Change owner of cache to current user
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
