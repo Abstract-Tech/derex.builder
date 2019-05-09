@@ -1,0 +1,5 @@
+pip
+pip-tools
+pytest
+Sphinx
+wheel
