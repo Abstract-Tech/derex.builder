@@ -12,7 +12,7 @@ from derex.builder.builders.buildah import BuildahBuilder
 from jsonschema.exceptions import ValidationError
 from pytest_mock import MockFixture
 
-from .utils import get_test_path
+from .utils import get_builder_path
 
 
 def test_buildah_builder(buildah_base: BuildahBuilder):
@@ -66,19 +66,19 @@ def test_create_builder(buildah_base):
     from derex.builder.builders.base import create_builder
     from derex.builder.builders.buildah import ConfigurationError
 
-    buildah_base_spec = get_test_path("fixtures/buildah_base/")
+    buildah_base_spec = get_builder_path("base")
     base = create_builder(buildah_base_spec + "/")
     assert base.hash() == buildah_base.hash()
     assert type(base) == type(buildah_base)
 
-    buildah_invalid_spec = get_test_path("fixtures/buildah_invalid/")
+    buildah_invalid_spec = get_builder_path("invalid")
     with pytest.raises(ValidationError):
         invalid = create_builder(buildah_invalid_spec)
 
 
 def test_dependent_container():
     # Make sure a trailing slash doesn't spoil the party
-    buildah_dependent_spec = get_test_path("fixtures/buildah_dependent/") + "/"
+    buildah_dependent_spec = get_builder_path("dependent") + "/"
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
 
     buildah_dependent.build()
@@ -107,5 +107,5 @@ def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixtur
 
 @pytest.fixture
 def buildah_base() -> BuildahBuilder:
-    buildah_base_spec = get_test_path("fixtures/buildah_base/")
+    buildah_base_spec = get_builder_path("base")
     return BuildahBuilder(buildah_base_spec)

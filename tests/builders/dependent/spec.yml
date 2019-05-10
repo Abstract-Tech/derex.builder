@@ -3,7 +3,7 @@ builder:
 
 source:
   type: derex-relative
-  path: buildah_base
+  path: base
 
 scripts:
   - hello_all.sh
