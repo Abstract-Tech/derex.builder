@@ -4,6 +4,7 @@
 import sys
 
 import click
+from click.exceptions import Abort
 from derex.builder.builders.base import create_builder
 from jsonschema.exceptions import ValidationError
 
@@ -35,5 +36,5 @@ def validate(path: str):
         create_builder(path).validate()
     except ValidationError as err:
         click.echo(err)
-        return -1
+        raise Abort()  # Make sure our exit status code is non-zero
     click.echo(f"All good")

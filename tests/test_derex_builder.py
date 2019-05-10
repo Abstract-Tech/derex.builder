@@ -9,6 +9,7 @@ from pathlib import PosixPath
 import docker  # type: ignore
 import pytest  # type: ignore
 from derex.builder.builders.buildah import BuildahBuilder
+from jsonschema.exceptions import ValidationError
 from pytest_mock import MockFixture  # type: ignore
 
 from .utils import get_test_path
@@ -71,9 +72,8 @@ def test_create_builder(buildah_base):
     assert type(base) == type(buildah_base)
 
     buildah_invalid_spec = get_test_path("fixtures/buildah_invalid/")
-    invalid = create_builder(buildah_invalid_spec)
-    with pytest.raises(ConfigurationError):
-        invalid.resolve_base_image()
+    with pytest.raises(ValidationError):
+        invalid = create_builder(buildah_invalid_spec)
 
 
 def test_dependent_container():

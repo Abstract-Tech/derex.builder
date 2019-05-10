@@ -90,8 +90,10 @@ class BuildahBuilder(BaseBuilder):
         """
         if source["type"] == "derex-relative":
             return os.path.join(os.path.dirname(self.path), source["path"])
-        else:
-            raise ConfigurationError(f'Unknown type: {source["type"]}')
+        else:  # The JSON schema validation should guarantee we never get here
+            raise ConfigurationError(
+                f'Unknown type: {source["type"]}'
+            )  # pragma: no cover
 
     def resolve(self):
         """Try to pull or build the image if not already present.
