@@ -6,7 +6,7 @@ import os
 from abc import ABC, abstractmethod
 
 import yaml
-from jsonschema import validate
+from jsonschema import validate  # type: ignore
 from zope.dottedname.resolve import resolve  # type: ignore
 
 
