@@ -6,11 +6,11 @@
 import os
 from pathlib import PosixPath
 
-import docker  # type: ignore
-import pytest  # type: ignore
+import docker
+import pytest
 from derex.builder.builders.buildah import BuildahBuilder
 from jsonschema.exceptions import ValidationError
-from pytest_mock import MockFixture  # type: ignore
+from pytest_mock import MockFixture
 
 from .utils import get_test_path
 

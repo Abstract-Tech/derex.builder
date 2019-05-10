@@ -6,8 +6,8 @@ import os
 from abc import ABC, abstractmethod
 
 import yaml
-from jsonschema import validate  # type: ignore
-from zope.dottedname.resolve import resolve  # type: ignore
+from jsonschema import validate
+from zope.dottedname.resolve import resolve
 
 
 class BaseBuilder(ABC):

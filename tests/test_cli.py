@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from click.testing import CliRunner
 from derex.builder import cli
-from pytest_mock import MockFixture  # type: ignore
+from pytest_mock import MockFixture
 
 from .utils import get_test_path
 
