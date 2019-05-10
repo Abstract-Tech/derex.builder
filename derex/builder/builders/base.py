@@ -93,11 +93,6 @@ class BaseBuilder(ABC):
         """
         return self.hash()[:10]
 
-    @abstractmethod
-    def docker_image(self) -> str:
-        """Returns a string usable as docker image, derived from the configuration and the tag.
-        """
-
     def hash_conf(self) -> str:
         """Return a hash representing this builder's config.
         The hash is constructed after parsing the file, so comments
@@ -140,7 +135,7 @@ class BaseBuilder(ABC):
         if not isinstance(source, str):
             builder = create_builder(cls.resolve_source_path(source, path))
             builder.resolve()
-            return builder.docker_image()
+            return builder.dest
         else:  # The source is a string, so it should be available in the docker hub
             return source  # We might pull the image here
 

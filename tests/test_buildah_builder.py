@@ -21,11 +21,9 @@ def test_buildah_builder(buildah_base: BuildahBuilder):
 
     # Check the generated docker image
     client = docker.from_env()
-    response = client.containers.run(
-        buildah_base.docker_image(), "cat /hello.txt", remove=True
-    )
+    response = client.containers.run(buildah_base.dest, "cat /hello.txt", remove=True)
     assert response == b"Hello world\n"
-    client.images.remove(buildah_base.docker_image())
+    client.images.remove(buildah_base.dest)
 
     images = buildah_base.list_buildah_images()
     assert f"docker.io/library/{buildah_base.source}" in images
@@ -56,7 +54,7 @@ def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
     build.assert_called_once()  # ...it will be built
 
     # If the image is present locally it will not be built
-    list_buildah_images.return_value = [f"localhost/{buildah_base.docker_image()}"]
+    list_buildah_images.return_value = [f"localhost/{buildah_base.dest}"]
     buildah_base.resolve()
     build.reset_mock()
     build.assert_not_called()
@@ -85,10 +83,10 @@ def test_dependent_container():
     # Check the generated docker image
     client = docker.from_env()
     response = client.containers.run(
-        buildah_dependent.docker_image(), "cat /hello_all.txt", remove=True
+        buildah_dependent.dest, "cat /hello_all.txt", remove=True
     )
     assert response == b"Hello all\n"
-    client.images.remove(buildah_dependent.docker_image())
+    client.images.remove(buildah_dependent.dest)
 
 
 def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixture):

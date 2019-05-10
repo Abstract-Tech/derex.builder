@@ -29,9 +29,6 @@ class BuildahBuilder(BaseBuilder):
         """
         return self.hash_files(self.scripts)
 
-    def docker_image(self):
-        return self.dest
-
     def build(self):
         """Builds the image specified by this builder.
         """

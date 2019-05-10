@@ -2,7 +2,7 @@ import os
 from tempfile import TemporaryDirectory
 
 from derex.builder import logger
-from derex.builder.builders.base import BaseBuilder, create_builder
+from derex.builder.builders.base import BaseBuilder, create_builder, load_conf
 
 from .schema import wheel_compiler_schema
 
@@ -51,9 +51,6 @@ class BuildahWheelCompiler(BaseBuilder):
             logger.info(base_run("sh", "-c", "pip install /wheelhouse/*"))
         self.buildah("commit", "--rm", base_container, self.dest)
         self.buildah("rm", builder_container)
-
-    def docker_image(self):
-        pass
 
     def hash(self):
         return self.hash_files(self.requirements)
