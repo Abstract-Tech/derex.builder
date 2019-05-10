@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from abc import ABC, abstractmethod
+from typing import Dict
 
 import yaml
 from derex.builder import logger
@@ -79,6 +80,28 @@ class BaseBuilder(ABC):
         m.update(input.encode("utf-8"))
         return m.hexdigest()
 
+    @classmethod
+    def resolve_source_path(cls, source: Dict, path: str) -> str:
+        """Given the `source` part of a configuration, find the directory it refers to.
+        """
+        if source["type"] == "derex-relative":
+            return os.path.join(os.path.dirname(path), source["path"])
+        else:  # The JSON schema validation should guarantee we never get here
+            raise ConfigurationError(
+                f'Unknown type: {source["type"]}'
+            )  # pragma: no cover
+
+    @classmethod
+    def resolve_base_image(cls, source: Dict, path: str) -> str:
+        """Makes sure the base image is available and returns its name.
+        """
+        if not isinstance(source, str):
+            builder = create_builder(cls.resolve_source_path(source, path))
+            builder.resolve()
+            return builder.docker_image()
+        else:  # The source is a string, so it should be available in the docker hub
+            return source  # We might pull the image here
+
 
 def create_builder(path: str) -> BaseBuilder:
     """Given a path to a builder configuration, it instantiates the relevant builder.
@@ -87,7 +110,11 @@ def create_builder(path: str) -> BaseBuilder:
     return resolve(conf["builder"]["class"])(path)
 
 
-def load_conf(path: str) -> dict:
+def load_conf(path: str) -> Dict:
     return yaml.load(
         open(os.path.join(path, "spec.yml")), Loader=yaml.FullLoader  # type: ignore
     )
+
+
+class ConfigurationError(Exception):
+    pass

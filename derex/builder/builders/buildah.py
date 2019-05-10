@@ -55,26 +55,6 @@ class BuildahBuilder(BaseBuilder):
     def docker_image(self):
         return self.dest
 
-    def resolve_base_image(self) -> str:
-        """Makes sure the base image is available and returns its name.
-        """
-        if not isinstance(self.source, str):
-            builder = create_builder(self.resolve_source_path(self.source))
-            builder.resolve()
-            return builder.docker_image()
-        else:  # The source is a string, so it should be available in the docker hub
-            return self.source  # We might pull the image here
-
-    def resolve_source_path(self, source: Dict) -> str:
-        """Given the `source` part of a configuration, find the directory it refers to.
-        """
-        if source["type"] == "derex-relative":
-            return os.path.join(os.path.dirname(self.path), source["path"])
-        else:  # The JSON schema validation should guarantee we never get here
-            raise ConfigurationError(
-                f'Unknown type: {source["type"]}'
-            )  # pragma: no cover
-
     def resolve(self):
         """Try to pull or build the image if not already present.
         """
@@ -86,7 +66,7 @@ class BuildahBuilder(BaseBuilder):
         """Builds the image specified by this builder.
         """
         logger.info(f"Building {self.path}")
-        base_image = self.resolve_base_image()
+        base_image = self.resolve_base_image(self.source, self.path)
         container = self.buildah("from", base_image)
         buildah = lambda cmd, *args: self.buildah(cmd, container, *args)
         script_dir = "/opt/derex/bin"
@@ -112,7 +92,3 @@ class BuildahBuilder(BaseBuilder):
         if os.getuid() != 0:
             cmd = ["sudo"] + cmd
         return subprocess.check_output(cmd + list(args)).decode("utf-8").strip()
-
-
-class ConfigurationError(Exception):
-    pass
