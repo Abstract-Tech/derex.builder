@@ -17,15 +17,37 @@ class ImageFound:
 
 
 class BuildahBuilder(BaseBuilder):
+    json_schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "required": ["builder", "source", "scripts", "dest"],
+        "additionalProperties": False,
+        "properties": {
+            "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
+            "scripts": {"type": "array", "items": {"type": "string"}},
+            "source": {
+                "oneOf": [
+                    {"type": "string"},
+                    {
+                        "type": "object",
+                        "required": ["type", "path"],
+                        "additionalProperties": False,
+                        "properties": {
+                            "type": {"type": "string", "enum": ["derex-relative"]},
+                            "path": {"type": "string"},
+                        },
+                    },
+                ]
+            },
+            "dest": {"type": "string"},
+        },
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.scripts = self.conf["scripts"]
         self.source = self.conf["source"]
         self.dest = f'{self.conf["dest"]}:{self.docker_tag()}'
-
-    def validate(self):
-        """Check that all resources referenced from the yaml file actually exist.
-        """
 
     def available_buildah(self) -> bool:
         """Returns True if an image generated with this builder can be found in the local buildah registry.

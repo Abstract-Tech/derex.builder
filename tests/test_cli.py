@@ -26,3 +26,17 @@ def test_command_build(mocker: MockFixture):
     )
     assert result.exit_code == 0
     assert resolve.call_count == 1
+
+
+def test_command_validate():
+    return_codes = {
+        0: ["buildah_base", "buildah_dependent"],
+        1: ["buildah_invalid", "buildah_invalid_2"],
+    }
+    runner = CliRunner()
+    for return_code, confs in return_codes.items():
+        for conf in confs:
+            result = runner.invoke(
+                cli.main, ["validate", get_test_path(f"fixtures/{conf}")]
+            )
+            assert result.exit_code == return_code

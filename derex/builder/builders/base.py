@@ -6,6 +6,7 @@ import os
 from abc import ABC, abstractmethod
 
 import yaml
+from jsonschema import validate
 from zope.dottedname.resolve import resolve  # type: ignore
 
 
@@ -27,6 +28,11 @@ class BaseBuilder(ABC):
         if path.endswith("/"):
             return path[:-1]
         return path
+
+    def validate(self):
+        """Check that all resources referenced from the yaml file actually exist.
+        """
+        validate(self.conf, self.json_schema)
 
     @abstractmethod
     def run(self):
