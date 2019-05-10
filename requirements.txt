@@ -7,6 +7,7 @@
 attrs==19.1.0             # via jsonschema
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
+click-log==0.3.2
 click==7.0
 docker-pycreds==0.4.0     # via docker
 docker==3.7.2

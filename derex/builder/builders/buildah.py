@@ -7,9 +7,8 @@ import subprocess
 from pathlib import PosixPath
 from typing import Dict, List, Union
 
+from derex.builder import logger
 from derex.builder.builders.base import BaseBuilder, create_builder
-
-logger = logging.getLogger(__name__)
 
 
 class ImageFound:
@@ -52,8 +51,11 @@ class BuildahBuilder(BaseBuilder):
     def available_buildah(self) -> bool:
         """Returns True if an image generated with this builder can be found in the local buildah registry.
         """
-        if f"localhost/{self.dest}" in self.list_buildah_images():
+        image_name = f"localhost/{self.dest}"
+        if image_name in self.list_buildah_images():
+            logger.debug(f"{image_name} found localy")
             return True
+        logger.debug(f"{image_name} could not be found localy")
         return False
 
     def list_buildah_images(self) -> List[str]:
@@ -99,11 +101,13 @@ class BuildahBuilder(BaseBuilder):
         """Try to pull or build the image if not already present.
         """
         if not self.available_buildah():
+            logger.debug(f"Building {self.dest}")
             self.run()
 
     def run(self):
         """Builds the image specified by this builder.
         """
+        logger.info(f"Building {self.path}")
         base_image = self.resolve_base_image()
         container = self.buildah("from", base_image)
         buildah = lambda cmd, *args: self.buildah(cmd, container, *args)
@@ -113,8 +117,10 @@ class BuildahBuilder(BaseBuilder):
             src = os.path.join(self.path, script)
             dest = os.path.join(script_dir, script)
             logger.info(buildah("copy", src, dest))
+            logger.info(f"Running {script}")
             buildah("run", "chmod", "a+x", dest)
             buildah("run", dest)
+        logger.info(f"Finished running scripts")
         self.buildah("commit", "--rm", container, self.dest)
 
     def push_to_docker(self):

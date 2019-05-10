@@ -6,6 +6,7 @@ import os
 from abc import ABC, abstractmethod
 
 import yaml
+from derex.builder import logger
 from jsonschema import validate
 from zope.dottedname.resolve import resolve
 
@@ -18,6 +19,7 @@ class BaseBuilder(ABC):
         """
         :param file_path: A path to a directory containing a spec yaml file and other support files.
         """
+        logger.info(f"Instantiating builder for {path}")
         self.path = self.sanitize_path(path)
         self.conf = load_conf(path)
         self.validate()
