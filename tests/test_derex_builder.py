@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `derex.builder` package."""
+"""builder"""
 
 import os
 from pathlib import PosixPath

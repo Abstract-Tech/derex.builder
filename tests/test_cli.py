@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""cli"""
 from click.testing import CliRunner
 from derex.builder import cli
 from pytest_mock import MockFixture
