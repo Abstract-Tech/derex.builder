@@ -20,6 +20,7 @@ class BaseBuilder(ABC):
         """
         self.path = self.sanitize_path(path)
         self.conf = load_conf(path)
+        self.validate()
 
     def sanitize_path(self, path: str) -> str:
         """Makes sure a path is valid and points to a directory.
