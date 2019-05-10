@@ -4,7 +4,6 @@ import json
 import logging
 import os
 import subprocess
-from pathlib import PosixPath
 from typing import Dict, List, Union
 
 from derex.builder import logger
@@ -44,13 +43,9 @@ class BuildahBuilder(BaseBuilder):
 
     def hash(self) -> str:
         """Return a hash representing this builder.
-        The hash should is built from the conf and the content of the scripts.
+        The hash is built from the yaml configuration and the content of the scripts.
         """
-        texts = [self.hash_conf()]
-        for script in self.conf["scripts"]:
-            path = PosixPath(self.path, script)
-            texts.append(path.read_text())
-        return self.mkhash("\n".join(texts))
+        return self.hash_files(self.scripts)
 
     def docker_image(self):
         return self.dest

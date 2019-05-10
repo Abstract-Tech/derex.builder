@@ -29,10 +29,11 @@ buildah_schema = {
 wheel_compiler_schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "required": ["builder", "sources", "dest"],
+    "required": ["builder", "sources", "dest", "requirements"],
     "additionalProperties": False,
     "properties": {
         "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
+        "requirements": {"type": "array", "items": pointer},
         "sources": {
             "type": "object",
             "required": ["builder", "base"],

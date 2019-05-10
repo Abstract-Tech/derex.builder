@@ -10,6 +10,12 @@ class BuildahWheelCompiler(BaseBuilder):
 
     json_schema = wheel_compiler_schema
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.sources = self.conf["sources"]
+        self.requirements = self.conf["requirements"]
+        self.dest = f'{self.conf["dest"]}:{self.docker_tag()}'
+
     def build(self):
         pass
 
@@ -17,7 +23,7 @@ class BuildahWheelCompiler(BaseBuilder):
         pass
 
     def hash(self):
-        pass
+        return self.hash_files(self.requirements)
 
     def resolve(self):
         pass

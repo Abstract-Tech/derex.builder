@@ -40,7 +40,7 @@ def test_hash_conf(buildah_base: BuildahBuilder):
 def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     tmp_file = tmp_path / "script.sh"
     tmp_file.write_text("foo")
-    buildah_base.conf["scripts"] = [tmp_file.as_posix()]
+    buildah_base.scripts = [tmp_file.as_posix()]
     initial = buildah_base.hash()
     tmp_file.write_text("bar")
     assert buildah_base.hash() != initial
@@ -63,8 +63,7 @@ def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
 
 
 def test_create_builder(buildah_base):
-    from derex.builder.builders.base import create_builder
-    from derex.builder.builders.buildah import ConfigurationError
+    from derex.builder.builders.base import create_builder, ConfigurationError
 
     buildah_base_spec = get_builder_path("base")
     base = create_builder(buildah_base_spec + "/")

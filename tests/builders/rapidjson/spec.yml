@@ -1,6 +1,9 @@
 builder:
   class: derex.builder.builders.BuildahWheelCompiler
 
+requirements:
+  - requirements.txt
+
 sources:
   builder:
     type: derex-relative

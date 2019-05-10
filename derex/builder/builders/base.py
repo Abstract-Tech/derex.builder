@@ -4,7 +4,8 @@ import hashlib
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Dict
+from pathlib import PosixPath
+from typing import Dict, List
 
 import yaml
 from derex.builder import logger
@@ -79,6 +80,16 @@ class BaseBuilder(ABC):
         m = hashlib.sha256()
         m.update(input.encode("utf-8"))
         return m.hexdigest()
+
+    def hash_files(self, files: List[str]):
+        """Given a list of files relative to the spec.yaml file,
+        return a hash that includes their contents and the contents of the specs.
+        """
+        texts = [self.hash_conf()]
+        for filename in files:
+            path = PosixPath(self.path, filename)
+            texts.append(path.read_text())
+        return self.mkhash("\n".join(texts))
 
     @classmethod
     def resolve_source_path(cls, source: Dict, path: str) -> str:
