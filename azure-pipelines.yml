@@ -14,6 +14,7 @@ steps:
 
   - script: |
       set -x
+      set -e
       docker run \
         --rm --privileged --security-opt="seccomp=unconfined" \
         --cap-add=ALL \
