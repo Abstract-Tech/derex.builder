@@ -40,6 +40,7 @@ steps:
       echo "##vso[codecoverage.publish codecoveragetool=Cobertura;summaryfile=$(pwd)/tests/test-cov.xml;reportdirectory=${PWD}/tests/htmlcov;]"
       ls -lR tests/htmlcov
     displayName: Change owner of last step output and republish coverage tests
+    condition: succeededOrFailed()
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
     inputs:
