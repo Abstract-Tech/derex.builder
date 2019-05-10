@@ -18,6 +18,10 @@ class BaseBuilder(ABC):
     """A builder takes a configuration directory and executes it to build a docker image.
     """
 
+    @property
+    def dest(self):
+        return f'{self.conf["dest"]}:{self.docker_tag()}'
+
     def __init__(self, path: str):
         """
         :param file_path: A path to a directory containing a spec yaml file and other support files.
@@ -25,7 +29,6 @@ class BaseBuilder(ABC):
         logger.info(f"Instantiating builder for {path}")
         self.path = self.sanitize_path(path)
         self.conf = load_conf(path)
-        self.dest = f'{self.conf["dest"]}:{self.docker_tag()}'
         self.validate()
 
     def sanitize_path(self, path: str) -> str:

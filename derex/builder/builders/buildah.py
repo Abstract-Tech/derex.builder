@@ -22,7 +22,6 @@ class BuildahBuilder(BaseBuilder):
         super().__init__(*args, **kwargs)
         self.scripts = self.conf["scripts"]
         self.source = self.conf["source"]
-        self.dest = f'{self.conf["dest"]}:{self.docker_tag()}'
 
     def hash(self) -> str:
         """Return a hash representing this builder.
