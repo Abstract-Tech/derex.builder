@@ -17,8 +17,16 @@ class BaseBuilder(ABC):
         """
         :param file_path: A path to a directory containing a spec yaml file and other support files.
         """
-        self.path = path
+        self.path = self.sanitize_path(path)
         self.conf = load_conf(path)
+
+    def sanitize_path(self, path: str) -> str:
+        """Makes sure a path is valid and points to a directory.
+        It also removes a trailing slash if present.
+        """
+        if path.endswith("/"):
+            return path[:-1]
+        return path
 
     @abstractmethod
     def run(self):

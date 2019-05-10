@@ -66,7 +66,7 @@ def test_create_builder(buildah_base):
     from derex.builder.builders.buildah import ConfigurationError
 
     buildah_base_spec = get_test_path("fixtures/buildah_base/")
-    base = create_builder(buildah_base_spec)
+    base = create_builder(buildah_base_spec + "/")
     assert base.hash() == buildah_base.hash()
     assert type(base) == type(buildah_base)
 
@@ -77,7 +77,8 @@ def test_create_builder(buildah_base):
 
 
 def test_dependent_container():
-    buildah_dependent_spec = get_test_path("fixtures/buildah_dependent/")
+    # Make sure a trailing slash doesn't spoil the party
+    buildah_dependent_spec = get_test_path("fixtures/buildah_dependent/") + "/"
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
 
     buildah_dependent.run()
