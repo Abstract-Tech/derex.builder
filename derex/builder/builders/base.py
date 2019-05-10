@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import subprocess
 from abc import ABC, abstractmethod
 from pathlib import PosixPath
 from typing import Dict, List
@@ -24,6 +25,7 @@ class BaseBuilder(ABC):
         logger.info(f"Instantiating builder for {path}")
         self.path = self.sanitize_path(path)
         self.conf = load_conf(path)
+        self.dest = f'{self.conf["dest"]}:{self.docker_tag()}'
         self.validate()
 
     def sanitize_path(self, path: str) -> str:
@@ -52,10 +54,36 @@ class BaseBuilder(ABC):
         result in a functionally different image changes the hash.
         """
 
-    @abstractmethod
     def resolve(self):
-        """Makes sure that the image represented by this builder is locally available.
+        """Try to pull or build the image if not already present.
         """
+        if not self.available_buildah():
+            logger.debug(f"Building {self.dest}")
+            self.build()
+
+    def available_buildah(self) -> bool:
+        """Returns True if an image generated with this builder can be found in the local buildah registry.
+        """
+        image_name = f"localhost/{self.dest}"
+        if image_name in self.list_buildah_images():
+            logger.debug(f"{image_name} found localy")
+            return True
+        logger.debug(f"{image_name} could not be found localy")
+        return False
+
+    def list_buildah_images(self) -> List[str]:
+        """Returns a list of all images locally available to buildah
+        """
+        images = json.loads(self.buildah("images", "--json"))
+        return sum((el["names"] for el in images if el["names"]), [])
+
+    def buildah(self, *args: str) -> str:
+        """Utility function to invoke buildah
+        """
+        cmd = ["buildah"]
+        if os.getuid() != 0:
+            cmd = ["sudo"] + cmd
+        return subprocess.check_output(cmd + list(args)).decode("utf-8").strip()
 
     def docker_tag(self) -> str:
         """Returns a string usable as docker tag, derived from the hash.

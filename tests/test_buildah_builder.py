@@ -92,9 +92,7 @@ def test_dependent_container():
 
 
 def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixture):
-    check_output = mocker.patch(
-        "derex.builder.builders.buildah.subprocess.check_output"
-    )
+    check_output = mocker.patch("derex.builder.builders.base.subprocess.check_output")
     getuid = mocker.patch("derex.builder.builders.buildah.os.getuid")
     getuid.return_value = 1000
     buildah_base.buildah()

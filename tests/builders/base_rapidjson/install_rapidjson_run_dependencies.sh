@@ -1,3 +1,3 @@
 #!/bin/sh
 
-apk add rapidjson
+apk add rapidjson libstdc++
