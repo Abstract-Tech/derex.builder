@@ -38,8 +38,8 @@ class BaseBuilder(ABC):
         validate(self.conf, self.json_schema)
 
     @abstractmethod
-    def run(self):
-        """Run the builder based on its configuration.
+    def build(self):
+        """Build the docker image based on the given configuration.
         Concrete classes should override this method.
         """
 

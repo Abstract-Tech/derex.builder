@@ -102,9 +102,9 @@ class BuildahBuilder(BaseBuilder):
         """
         if not self.available_buildah():
             logger.debug(f"Building {self.dest}")
-            self.run()
+            self.build()
 
-    def run(self):
+    def build(self):
         """Builds the image specified by this builder.
         """
         logger.info(f"Building {self.path}")

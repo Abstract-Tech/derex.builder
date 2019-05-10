@@ -16,7 +16,7 @@ from .utils import get_test_path
 
 
 def test_buildah_builder(buildah_base: BuildahBuilder):
-    buildah_base.run()
+    buildah_base.build()
     buildah_base.push_to_docker()
 
     # Check the generated docker image
@@ -51,15 +51,15 @@ def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
         "derex.builder.builders.buildah.BuildahBuilder.list_buildah_images"
     )
     list_buildah_images.return_value = []  # When the image is not available locally...
-    run = mocker.patch("derex.builder.builders.buildah.BuildahBuilder.run")
+    build = mocker.patch("derex.builder.builders.buildah.BuildahBuilder.build")
     buildah_base.resolve()
-    run.assert_called_once()  # ...it will be built
+    build.assert_called_once()  # ...it will be built
 
     # If the image is present locally it will not be built
     list_buildah_images.return_value = [f"localhost/{buildah_base.docker_image()}"]
     buildah_base.resolve()
-    run.reset_mock()
-    run.assert_not_called()
+    build.reset_mock()
+    build.assert_not_called()
 
 
 def test_create_builder(buildah_base):
@@ -81,7 +81,7 @@ def test_dependent_container():
     buildah_dependent_spec = get_test_path("fixtures/buildah_dependent/") + "/"
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
 
-    buildah_dependent.run()
+    buildah_dependent.build()
     buildah_dependent.push_to_docker()
     # Check the generated docker image
     client = docker.from_env()
