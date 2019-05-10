@@ -5,6 +5,7 @@ import sys
 
 import click
 from derex.builder.builders.base import create_builder
+from jsonschema.exceptions import ValidationError
 
 from . import arguments
 
@@ -30,5 +31,9 @@ def validate(path: str):
     """Validate spec.yml yaml configuration in the given directory.
     """
     click.echo(f"Validating {path}/spec.yml")
-    create_builder(path).validate()
+    try:
+        create_builder(path).validate()
+    except ValidationError as err:
+        click.echo(err)
+        return -1
     click.echo(f"All good")
