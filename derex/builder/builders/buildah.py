@@ -10,37 +10,15 @@ from typing import Dict, List, Union
 from derex.builder import logger
 from derex.builder.builders.base import BaseBuilder, create_builder
 
+from .schema import buildah_schema
+
 
 class ImageFound:
     pass
 
 
 class BuildahBuilder(BaseBuilder):
-    json_schema = {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "required": ["builder", "source", "scripts", "dest"],
-        "additionalProperties": False,
-        "properties": {
-            "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
-            "scripts": {"type": "array", "items": {"type": "string"}},
-            "source": {
-                "oneOf": [
-                    {"type": "string"},
-                    {
-                        "type": "object",
-                        "required": ["type", "path"],
-                        "additionalProperties": False,
-                        "properties": {
-                            "type": {"type": "string", "enum": ["derex-relative"]},
-                            "path": {"type": "string"},
-                        },
-                    },
-                ]
-            },
-            "dest": {"type": "string"},
-        },
-    }
+    json_schema = buildah_schema
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
