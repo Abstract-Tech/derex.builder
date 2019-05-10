@@ -30,16 +30,20 @@ steps:
           python3 setup.py install
           pip3 install pytest-azurepipelines
           cd tests
-          pytest --cov=derex --cov-report html --cov-report term --cov-report term-missing --cov-branch"
+          pytest --cov=derex --cov-report html --cov-report term --cov-report term-missing --cov-branch|grep -v codecoveragetool=Cobertura
+          exit ${PIPESTATUS[0]}"
     displayName: 'Run tests inside buildah image'
 
   - script: |
       sudo chown -Rv $(id -u) ${PWD}/cache ${PWD}/tests;
       npm install juice
+      # Azure pipelines strips style sheets but leaves styles in place.
+      # juice can embed the styles in the HTML for us and present a much better
+      # view in the coverage results tab.
       for filename in tests/htmlcov/*.html; do $(npm bin)/juice $filename $filename; done
       echo "##vso[codecoverage.publish codecoveragetool=Cobertura;summaryfile=$(pwd)/tests/test-cov.xml;reportdirectory=${PWD}/tests/htmlcov;]"
       ls -lR tests/htmlcov
-    displayName: Change owner of last step output and republish coverage tests
+    displayName: Fix coverage result and publish it
     condition: succeededOrFailed()
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
