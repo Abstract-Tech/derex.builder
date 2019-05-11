@@ -23,6 +23,8 @@ steps:
         -v ${PWD}:${PWD} \
         derex/buildah \
         bash -c "
+          set -x
+          set -e
           cd ${PWD}
           mkdir -p ${PWD}/cache/pip
           chown -R root:root ${PWD}/cache/pip
@@ -31,8 +33,7 @@ steps:
           python3 setup.py install
           pip3 install pytest-azurepipelines
           cd tests
-          pytest --cov=derex --cov-report html --cov-report term --cov-report term-missing --cov-branch|grep -v codecoveragetool=Cobertura
-          exit ${PIPESTATUS[0]}"
+          pytest --cov=derex --cov-report html --cov-report term --cov-report term-missing --cov-branch|grep -v codecoveragetool=Cobertura"
     displayName: 'Run tests inside buildah image'
 
   - script: |
