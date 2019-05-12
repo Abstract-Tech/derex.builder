@@ -40,8 +40,12 @@ class BuildahWheelCompiler(BaseBuilder):
                 src = os.path.join(self.path, requirement)
                 dest = os.path.join(requirements_dir, requirement)
                 logger.info(self.buildah("copy", builder_container, src, dest))
-                logger.info(f"Compiling {requirement}")
+                logger.info(f"Installing {requirement}")
                 logger.debug(open(src).read())
+                # If numpy is not installed scipy will refuse to compile.
+                # There is some build time potentially wasted. Maybe make it optional.
+                logger.info(builder_run(*"pip install -r".split(" "), f"{dest}"))
+                logger.info(f"Compiling wheels for {requirement}")
                 logger.info(
                     builder_run(
                         *"pip wheel --wheel-dir=/wheelhouse -r".split(" "), f"{dest}"

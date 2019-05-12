@@ -1,7 +1,7 @@
 builder:
   class: derex.builder.builders.BuildahBuilder
 
-source: python:2.7.16-alpine3.9
+source: python:2.7-alpine3.7
 
 scripts:
   - install_run_dependencies.sh
