@@ -20,6 +20,7 @@ from .utils import get_builder_path
 def test_wheel_compiler():
     rapidjson = create_builder(get_builder_path("rapidjson"))
     rapidjson.resolve()
+    rapidjson.push_to_docker()
     client = docker.from_env()
     res = client.containers.run(
         rapidjson.dest,

@@ -47,7 +47,3 @@ class BuildahBuilder(BaseBuilder):
             buildah("run", dest)
         logger.info(f"Finished running scripts")
         self.buildah("commit", "--rm", container, self.dest)
-
-    def push_to_docker(self):
-        self.resolve()
-        self.buildah("push", self.dest, f"docker-daemon:{self.dest}")

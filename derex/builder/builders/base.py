@@ -139,6 +139,13 @@ class BaseBuilder(ABC):
         else:  # The source is a string, so it should be available in the docker hub
             return source  # We might pull the image here
 
+    def push_to_docker(self):
+        """Push the result of this build to the local docker daemon.
+        Build the image if necessary.
+        """
+        self.resolve()
+        self.buildah("push", self.dest, f"docker-daemon:{self.dest}")
+
 
 def create_builder(path: str) -> BaseBuilder:
     """Given a path to a builder configuration, it instantiates the relevant builder.
