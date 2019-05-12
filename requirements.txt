@@ -13,7 +13,7 @@ docker-pycreds==0.4.0     # via docker
 docker==3.7.2
 idna==2.8                 # via requests
 jsonschema==3.0.1
-pyrsistent==0.15.1        # via jsonschema
+pyrsistent==0.15.2        # via jsonschema
 pyyaml==5.1
 requests==2.21.0          # via docker
 six==1.12.0               # via docker, docker-pycreds, jsonschema, pyrsistent, websocket-client
