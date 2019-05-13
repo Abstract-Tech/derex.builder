@@ -14,7 +14,6 @@ steps:
 
   - script: |
       set -x
-      set -e
       docker run \
         --rm --privileged --security-opt="seccomp=unconfined" \
         --cap-add=ALL \
@@ -33,7 +32,8 @@ steps:
           python3 setup.py install
           pip3 install pytest-azurepipelines
           cd tests
-          pytest |grep -v codecoveragetool=Cobertura"
+          pytest |grep -v codecoveragetool=Cobertura
+          echo $PIPESTATUS"
     displayName: 'Run tests inside buildah image'
 
   - script: |
