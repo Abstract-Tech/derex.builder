@@ -94,18 +94,22 @@ class BaseBuilder(ABC):
     def available_buildah(self) -> bool:
         """Returns True if an image generated with this builder can be found in the local buildah registry.
         """
-        image_name = f"localhost/{self.dest}"
-        if image_name in self.list_buildah_images():
-            logger.debug(f"{image_name} found localy")
+        if self.dest in self.list_buildah_images():
+            logger.debug(f"{self.dest} found localy")
             return True
-        logger.debug(f"{image_name} could not be found localy")
+        logger.debug(f"{self.dest} could not be found localy")
         return False
 
     def list_buildah_images(self) -> List[str]:
         """Returns a list of all images locally available to buildah
         """
+        # Get a list of all images
         images = json.loads(self.buildah("images", "--json"))
-        return sum((el["names"] for el in images if el["names"]), [])
+        # Collect all their tags
+        tags = sum((el["names"] for el in images if el["names"]), [])
+
+        # Remove the first path component from image names
+        return sorted([tag.split("/", 1)[1] for tag in tags])
 
     def buildah(self, *args: str) -> str:
         """Utility function to invoke buildah
