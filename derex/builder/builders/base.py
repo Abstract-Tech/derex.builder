@@ -21,9 +21,9 @@ import yaml
 
 
 CACHES = {
-    "/var/cache/pip-alpine": os.environ.get("PIP_CACHE"),
-    "/var/cache/apk": os.environ.get("APK_CACHE"),
-    "/var/cache/npm": os.environ.get("NPM_CACHE"),
+    "/var/cache/pip-alpine": "PIP_CACHE",
+    "/var/cache/apk": "APK_CACHE",
+    "/var/cache/npm": "NPM_CACHE",
 }
 
 
@@ -140,9 +140,9 @@ class BaseBuilder(ABC):
     ):
         """Runs a command inside the container after adding cache directories.
         """
-        self.ensure_caches()
+        caches = self.ensure_caches()
         volumes: List[str] = []
-        for dest, source in CACHES.items():
+        for dest, source in caches.items():
             if source:
                 volumes += ["-v", f"{source}:{dest}"]
         return self.buildah(
@@ -152,14 +152,29 @@ class BaseBuilder(ABC):
     def ensure_caches(self):
         """Make sure the cache directories exist.
         """
-        for dest, source in CACHES.items():
+        caches = {}
+        for dest, varname in CACHES.items():
+            source = os.environ.get(varname)
             if source:
                 if not os.path.isdir(source):
                     logger.warn(f"Creating cache directory {source}")
                     try:
-                        subprocess.check_output(("mkdir", source))
-                    except subprocess.CalledProcessError:  # Please (xkcd #149)
-                        subprocess.check_output(("sudo", "mkdir", source))
+                        os.mkdir(source)
+                        caches[source] = dest
+                    except PermissionError:  # Please (xkcd #149)
+                        logger.warn(
+                            f"If you don't want to use this directory, specify a different one in the {varname} environment variable, or set the variable to an empty string to disable this feature"
+                        )
+                        try:
+                            subprocess.check_output(("sudo", "mkdir", source))
+                            caches[source] = dest
+                        except subprocess.CalledProcessError:
+                            logger.error(
+                                f"Error creating {source}. Continuing without it."
+                            )
+                else:  # path exists
+                    caches[source] = dest
+        return caches
 
     def run(self, cmd):
         logger.info(f"executing {' '.join(cmd)}\n")
@@ -211,15 +226,26 @@ class BaseBuilder(ABC):
             )  # pragma: no cover
 
     @classmethod
-    def resolve_base_image(cls, source: Dict, path: str) -> str:
+    def resolve_base_image(cls, source: Union[str, Dict], path: str) -> str:
         """Makes sure the base image is available and returns its name.
         """
         if not isinstance(source, str):
-            builder = create_builder(cls.resolve_source_path(source, path))
-            builder.resolve()
-            return builder.dest
+            return cls.get_source_target(source, path)
         else:  # The source is a string, so it should be available in the docker hub
             return source  # We might pull the image here
+
+    @classmethod
+    def get_source_target(
+        cls, source: Union[str, Dict], path: str, resolve=False
+    ) -> str:
+        """Given a source specification and the path returns the target
+        of the pointed builder.
+        # TODO this should be a function, not an abstract method?
+        """
+        if not isinstance(source, str):
+            return create_builder(cls.resolve_source_path(source, path)).dest
+        else:
+            return source
 
     def push_to_docker(self):
         """Push the result of this build to the local docker daemon.

@@ -29,7 +29,11 @@ class BuildahBuilder(BaseBuilder):
         """Return a hash representing this builder.
         The hash is built from the yaml configuration and the content of the scripts.
         """
-        return self.hash_files(self.scripts)
+        elements = [
+            self.get_source_target(self.source, path=self.path),
+            self.hash_files(self.scripts),
+        ]
+        return self.mkhash("\n".join(elements))
 
     def build(self):
         """Builds the image specified by this builder.
