@@ -7,6 +7,8 @@ from jsonschema import validate
 from pathlib import PosixPath
 from typing import Dict
 from typing import List
+from typing import Tuple
+from typing import Union
 from urllib.error import HTTPError
 from zope.dottedname.resolve import resolve
 
@@ -16,6 +18,13 @@ import os
 import subprocess
 import urllib.request
 import yaml
+
+
+CACHES = {
+    "/var/cache/pip-alpine": os.environ.get("PIP_CACHE"),
+    "/var/cache/apk": os.environ.get("APK_CACHE"),
+    "/var/cache/npm": os.environ.get("NPM_CACHE"),
+}
 
 
 class BaseBuilder(ABC):
@@ -125,6 +134,32 @@ class BaseBuilder(ABC):
                 logger.info(line.rstrip())
             res += [line]
         return "".join(res).rstrip()
+
+    def buildah_run(
+        self, container: str, args: List[str], extra_args: Union[List[str], Tuple] = ()
+    ):
+        """Runs a command inside the container after adding cache directories.
+        """
+        self.ensure_caches()
+        volumes: List[str] = []
+        for dest, source in CACHES.items():
+            if source:
+                volumes += ["-v", f"{source}:{dest}"]
+        return self.buildah(
+            *(["run"] + list(extra_args) + volumes + [container] + list(args))
+        )
+
+    def ensure_caches(self):
+        """Make sure the cache directories exist.
+        """
+        for dest, source in CACHES.items():
+            if source:
+                if not os.path.isdir(source):
+                    logger.warn(f"Creating cache directory {source}")
+                    try:
+                        subprocess.check_output(("mkdir", source))
+                    except subprocess.CalledProcessError:  # Please (xkcd #149)
+                        subprocess.check_output(("sudo", "mkdir", source))
 
     def run(self, cmd):
         logger.info(f"executing {' '.join(cmd)}\n")

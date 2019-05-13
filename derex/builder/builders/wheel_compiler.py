@@ -1,10 +1,11 @@
-import os
+from .schema import wheel_compiler_schema
+from derex.builder import logger
+from derex.builder.builders.base import BaseBuilder
+from derex.builder.builders.base import create_builder
+from derex.builder.builders.base import load_conf
 from tempfile import TemporaryDirectory
 
-from derex.builder import logger
-from derex.builder.builders.base import BaseBuilder, create_builder, load_conf
-
-from .schema import wheel_compiler_schema
+import os
 
 
 class BuildahWheelCompiler(BaseBuilder):
@@ -28,11 +29,11 @@ class BuildahWheelCompiler(BaseBuilder):
         requirements_dir = "/etc/derex.builder.requirements"
         with TemporaryDirectory("wheelhouse") as tmp_whs:
             volumes = ["-v", f"{tmp_whs}:/wheelhouse"]
-            base_run = lambda *args: self.buildah(
-                "run", *(volumes + [base_container] + list(args))
+            base_run = lambda *args: self.buildah_run(
+                container=base_container, args=list(args), extra_args=volumes
             )
-            builder_run = lambda *args: self.buildah(
-                "run", *(volumes + [builder_container] + list(args))
+            builder_run = lambda *args: self.buildah_run(
+                container=builder_container, args=list(args), extra_args=volumes
             )
             builder_run("mkdir", "-p", requirements_dir)
             logger.info(builder_run("pip", "install", "wheel"))
