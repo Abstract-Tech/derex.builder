@@ -4,9 +4,11 @@ import hashlib
 import json
 import os
 import subprocess
+import urllib.request
 from abc import ABC, abstractmethod
 from pathlib import PosixPath
 from typing import Dict, List
+from urllib.error import HTTPError
 
 import yaml
 from derex.builder import logger
@@ -61,8 +63,33 @@ class BaseBuilder(ABC):
         """Try to pull or build the image if not already present.
         """
         if not self.available_buildah():
-            logger.debug(f"Building {self.dest}")
-            self.build()
+            logger.debug(f"Image {self.dest} not found locally")
+            if self.available_docker_registry():
+                logger.info(f"Pulling {self.dest} from docker registry")
+                self.buildah("pull", self.dest)
+            else:
+                logger.info(f"Building {self.dest}")
+                self.build()
+
+    def available_docker_registry(self):
+        # TODO: refator so this is available without calling `split`
+        image_name = self.dest.split(":")[0]
+
+        token_url = f"https://auth.docker.io/token?service=registry.docker.io&scope=repository:{image_name}:pull"
+        try:
+            token = json.loads(urllib.request.urlopen(token_url).read())["token"]
+            url = f"https://registry-1.docker.io/v2/{image_name}/tags/list"
+            req = urllib.request.Request(
+                url, headers={"Authorization": f"Bearer {token}"}
+            )
+            response = urllib.request.urlopen(req)
+        except HTTPError as e:
+            logger.error(e)
+            return False
+        parsed_response = json.loads(response.read())
+        if self.docker_tag() in parsed_response["tags"]:
+            logger.debug(f"Found {self.dest} on docker registry")
+            return True
 
     def available_buildah(self) -> bool:
         """Returns True if an image generated with this builder can be found in the local buildah registry.
