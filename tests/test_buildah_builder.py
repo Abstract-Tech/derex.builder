@@ -3,18 +3,19 @@
 
 """builder"""
 
-import os
-from pathlib import PosixPath
-
-import docker
-import pytest
+from .utils import get_builder_path
 from derex.builder.builders.buildah import BuildahBuilder
 from jsonschema.exceptions import ValidationError
+from pathlib import PosixPath
 from pytest_mock import MockFixture
 
-from .utils import get_builder_path
+import docker
+import os
+import pytest
 
 
+@pytest.mark.slowtest
+@pytest.mark.buildah
 def test_buildah_builder(buildah_base: BuildahBuilder):
     buildah_base.build()
     buildah_base.push_to_docker()
@@ -44,6 +45,8 @@ def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     assert buildah_base.hash() != initial
 
 
+@pytest.mark.slowtest
+@pytest.mark.buildah
 def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
     list_buildah_images = mocker.patch(
         "derex.builder.builders.buildah.BuildahBuilder.list_buildah_images"
@@ -73,6 +76,8 @@ def test_create_builder(buildah_base):
         invalid = create_builder(buildah_invalid_spec)
 
 
+@pytest.mark.slowtest
+@pytest.mark.buildah
 def test_dependent_container():
     # Make sure a trailing slash doesn't spoil the party
     buildah_dependent_spec = get_builder_path("dependent") + "/"
