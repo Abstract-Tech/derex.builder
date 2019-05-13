@@ -1,14 +1,16 @@
 """Classes to build docker images using Buildah.
 """
+from .schema import buildah_schema
+from derex.builder import logger
+from derex.builder.builders.base import BaseBuilder
+from derex.builder.builders.base import create_builder
+from typing import Dict
+from typing import List
+from typing import Union
+
 import json
 import logging
 import os
-from typing import Dict, List, Union
-
-from derex.builder import logger
-from derex.builder.builders.base import BaseBuilder, create_builder
-
-from .schema import buildah_schema
 
 
 class ImageFound:
@@ -34,7 +36,7 @@ class BuildahBuilder(BaseBuilder):
         """
         logger.info(f"Building {self.path}")
         base_image = self.resolve_base_image(self.source, self.path)
-        container = self.buildah("from", base_image)
+        container = self.buildah("from", base_image, print_output=False)
         buildah = lambda cmd, *args: self.buildah(cmd, container, *args)
         script_dir = "/opt/derex/bin"
         buildah("run", "mkdir", "-p", script_dir)

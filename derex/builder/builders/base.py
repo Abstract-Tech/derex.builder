@@ -1,19 +1,21 @@
 """Base class and utility methods for yaml-based image definitions.
 """
+from abc import ABC
+from abc import abstractmethod
+from derex.builder import logger
+from jsonschema import validate
+from pathlib import PosixPath
+from typing import Dict
+from typing import List
+from urllib.error import HTTPError
+from zope.dottedname.resolve import resolve
+
 import hashlib
 import json
 import os
 import subprocess
 import urllib.request
-from abc import ABC, abstractmethod
-from pathlib import PosixPath
-from typing import Dict, List
-from urllib.error import HTTPError
-
 import yaml
-from derex.builder import logger
-from jsonschema import validate
-from zope.dottedname.resolve import resolve
 
 
 class BaseBuilder(ABC):
@@ -104,20 +106,34 @@ class BaseBuilder(ABC):
         """Returns a list of all images locally available to buildah
         """
         # Get a list of all images
-        images = json.loads(self.buildah("images", "--json"))
+        images = json.loads(self.buildah("images", "--json", print_output=False))
         # Collect all their tags
         tags = sum((el["names"] for el in images if el["names"]), [])
 
         # Remove the first path component from image names
         return sorted([tag.split("/", 1)[1] for tag in tags])
 
-    def buildah(self, *args: str) -> str:
+    def buildah(self, *args: str, print_output=True) -> str:
         """Utility function to invoke buildah
         """
         cmd = ["buildah"]
         if os.getuid() != 0:
             cmd = ["sudo"] + cmd
-        return subprocess.check_output(cmd + list(args)).decode("utf-8").strip()
+        res: List[str] = []
+        for line in self.run(cmd + list(args)):
+            if print_output:
+                logger.info(line.rstrip())
+            res += [line]
+        return "".join(res).rstrip()
+
+    def run(self, cmd):
+        logger.info(f"executing {' '.join(cmd)}\n")
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        while True:
+            line = process.stdout.readline().decode("utf-8")
+            if not line:
+                break
+            yield line
 
     def docker_tag(self) -> str:
         """Returns a string usable as docker tag, derived from the hash.

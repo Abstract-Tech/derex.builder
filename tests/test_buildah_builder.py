@@ -95,14 +95,14 @@ def test_dependent_container():
 
 
 def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixture):
-    check_output = mocker.patch("derex.builder.builders.base.subprocess.check_output")
+    run = mocker.patch("derex.builder.builders.base.BaseBuilder.run")
     getuid = mocker.patch("derex.builder.builders.buildah.os.getuid")
     getuid.return_value = 1000
     buildah_base.buildah()
-    assert check_output.call_args[0][0] == ["sudo", "buildah"]
+    assert run.call_args[0][0] == ["sudo", "buildah"]
     getuid.return_value = 0
     buildah_base.buildah()
-    assert check_output.call_args[0][0] == ["buildah"]
+    assert run.call_args[0][0] == ["buildah"]
 
 
 @pytest.fixture
