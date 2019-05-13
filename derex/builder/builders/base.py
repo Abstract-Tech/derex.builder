@@ -230,7 +230,7 @@ class BaseBuilder(ABC):
         """Makes sure the base image is available and returns its name.
         """
         if not isinstance(source, str):
-            return cls.get_source_target(source, path)
+            return cls.get_source_target(source, path, resolve=True)
         else:  # The source is a string, so it should be available in the docker hub
             return source  # We might pull the image here
 
@@ -243,7 +243,10 @@ class BaseBuilder(ABC):
         # TODO this should be a function, not an abstract method?
         """
         if not isinstance(source, str):
-            return create_builder(cls.resolve_source_path(source, path)).dest
+            builder = create_builder(cls.resolve_source_path(source, path))
+            if resolve == True:
+                builder.resolve()
+            return builder.dest
         else:
             return source
 

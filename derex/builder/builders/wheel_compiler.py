@@ -58,4 +58,9 @@ class BuildahWheelCompiler(BaseBuilder):
         self.buildah("rm", builder_container)
 
     def hash(self):
-        return self.hash_files(self.requirements)
+        elements = [
+            self.get_source_target(self.sources["base"], path=self.path),
+            self.get_source_target(self.sources["builder"], path=self.path),
+            self.hash_files(self.requirements),
+        ]
+        return self.mkhash("\n".join(elements))
