@@ -23,6 +23,7 @@ buildah_schema = {
         "scripts": {"type": "array", "items": {"type": "string"}},
         "source": pointer,
         "dest": {"type": "string"},
+        "copy": {"type": "object"},
     },
 }
 

@@ -5,7 +5,8 @@ set -x
 EDX_PLATFORM_REPOSITORY=https://github.com/edx/edx-platform.git
 EDX_PLATFORM_VERSION=open-release/ironwood.1
 
-mkdir -p /openedx/themes /openedx/locale
+mkdir -p /openedx/themes /openedx/locale /openedx/bin/
+mv /tmp/openedx-assets /openedx/bin/
 
 wget -O - https://github.com/regisb/openedx-i18n/archive/hawthorn.tar.gz \
     |tar xzf - --strip-components=3 --directory /openedx/locale/ openedx-i18n-hawthorn/edx-platform/locale/

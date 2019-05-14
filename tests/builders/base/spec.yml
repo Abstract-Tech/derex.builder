@@ -3,6 +3,9 @@ builder:
 
 source: alpine:3.9
 
+copy:
+  exclamation_mark.txt: /exclamation_mark.txt
+
 scripts:
   - hello_world.sh
 

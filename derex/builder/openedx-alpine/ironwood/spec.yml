@@ -5,6 +5,10 @@ source:
   type: derex-relative
   path: wheels
 
+copy:
+  settings/lms: /openedx/edx-platform/lms/envs/derex
+  settings/cms: /openedx/edx-platform/cms/envs/derex
+  openedx-assets: /tmp/
 scripts:
   - install_openedx.sh
 #  - compile_assets.sh
