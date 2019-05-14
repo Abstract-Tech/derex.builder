@@ -33,7 +33,7 @@ steps:
           python3 setup.py install
           pip3 install git+https://github.com/Abstract-Tech/pytest-azurepipelines.git
           cd tests
-          pytest |grep -v codecoveragetool=Cobertura
+          pytest --ignore-docstrings |grep -v codecoveragetool=Cobertura
           exit \${PIPESTATUS[0]}"
     displayName: 'Run tests inside buildah image'
 
