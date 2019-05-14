@@ -21,7 +21,7 @@ import yaml
 
 
 CACHES = {
-    "/var/cache/pip-alpine": "PIP_CACHE",
+    "/root/.cache/pip": "PIP_CACHE",
     "/var/cache/apk": "APK_CACHE",
     "/var/cache/npm": "NPM_CACHE",
 }
