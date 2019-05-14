@@ -156,7 +156,7 @@ class BaseBuilder(ABC):
             source = os.environ.get(varname)
             if source:
                 if not os.path.isdir(source):
-                    logger.warn(f"Creating cache directory {source}")
+                    logger.warning(f"Creating cache directory {source}")
                     try:
                         os.mkdir(source)
                         caches[source] = dest
