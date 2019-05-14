@@ -6,7 +6,7 @@ pip
 pip-tools
 pre-commit
 pytest
-pytest-black
+git+https://github.com/Abstract-Tech/pytest-black.git
 pytest-cov
 pytest-mock
 Sphinx
