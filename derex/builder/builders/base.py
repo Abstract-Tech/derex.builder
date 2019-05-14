@@ -161,8 +161,10 @@ class BaseBuilder(ABC):
                         os.mkdir(source)
                         caches[source] = dest
                     except PermissionError:  # Please (xkcd #149)
-                        logger.warn(
-                            f"If you don't want to use this directory, specify a different one in the {varname} environment variable, or set the variable to an empty string to disable this feature"
+                        logger.warning(
+                            "If you don't want to use this directory, specify "
+                            f"a different one in the {varname} environment variable, "
+                            "or set the variable to an empty string to disable this feature"
                         )
                         try:
                             subprocess.check_output(("sudo", "mkdir", source))
