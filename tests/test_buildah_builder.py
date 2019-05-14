@@ -45,6 +45,12 @@ def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     assert buildah_base.hash() != initial
 
 
+def test_caches(buildah_base: BuildahBuilder, tmp_path: PosixPath):
+    os.environ["PIP_CACHE"] = f"{tmp_path}/pip-alpine"
+    buildah_base.ensure_caches()
+    assert os.path.exists(os.environ["PIP_CACHE"])
+
+
 @pytest.mark.slowtest
 @pytest.mark.buildah
 def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
