@@ -5,5 +5,6 @@ source: python:2.7-alpine3.7
 
 scripts:
   - install_run_dependencies.sh
+  - patch_ldconfig_to_fix_shapely.sh
 
 dest: derex/openedx-alpine-base
