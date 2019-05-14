@@ -143,8 +143,7 @@ class BaseBuilder(ABC):
         caches = self.ensure_caches()
         volumes: List[str] = []
         for source, dest in caches.items():
-            if source:
-                volumes += ["-v", f"{source}:{dest}"]
+            volumes += ["-v", f"{source}:{dest}"]
         return self.buildah(
             *(["run"] + list(extra_args) + volumes + [container] + list(args))
         )
