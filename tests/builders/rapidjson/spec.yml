@@ -1,0 +1,15 @@
+builder:
+  class: derex.builder.builders.BuildahWheelCompiler
+
+requirements:
+  - requirements.txt
+
+sources:
+  builder:
+    type: derex-relative
+    path: build_rapidjson
+  base:
+    type: derex-relative
+    path: base_rapidjson
+
+dest: derex/rapidjson-wheel

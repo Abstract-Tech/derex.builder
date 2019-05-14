@@ -1,0 +1,11 @@
+builder:
+  class: derex.builder.builders.BuildahBuilder
+
+source:
+  type: derex-relative
+  path: base_rapidjson
+
+scripts:
+  - install_rapidjson_build_dependencies.sh
+
+dest: derex/buildwheels_rapidjson

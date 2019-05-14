@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 from __future__ import print_function
+
 import argparse
 import os
 import subprocess
@@ -7,10 +8,8 @@ import sys
 import traceback
 
 from path import Path
-
 from pavelib import assets
 from xmodule import static_content as xmodule_static_content
-
 
 DEFAULT_STATIC_ROOT = '/openedx/staticfiles'
 DEFAULT_THEMES_DIR = '/openedx/themes'

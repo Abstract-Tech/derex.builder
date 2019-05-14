@@ -1,0 +1,13 @@
+coverage
+black
+isort
+mypy
+pip
+pip-tools
+pre-commit
+pytest
+git+https://github.com/Abstract-Tech/pytest-black.git
+pytest-cov
+pytest-mock
+Sphinx
+wheel

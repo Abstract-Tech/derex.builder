@@ -1,0 +1,11 @@
+builder:
+  class: derex.builder.builders.BuildahBuilder
+
+source:
+  type: derex-relative
+  path: base
+
+scripts:
+  - install_build_dependencies.sh
+
+dest: derex/openedx-alpine-buildwheels

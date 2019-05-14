@@ -7,31 +7,70 @@ steps:
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreCacheV1.RestoreCache@1
     inputs:
-      keyfile: 'derex/builder/openedx-alpine/.cache_id'
-      targetfolder: 'cache/'
+      keyfile: 'requirements*.txt'
+      targetfolder: 'cache'
+      verbosity: 'Trace'
       vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
 
   - script: |
       set -x
+      set -e
       docker run \
         --rm --privileged --security-opt="seccomp=unconfined" \
         --cap-add=ALL \
         -v /var/lib/containers/:/var/lib/containers/:rw,Z \
         -v /var/run/docker.sock:/var/run/docker.sock \
-        -v $(pwd):$(pwd) \
+        -v ${PWD}:${PWD} \
         derex/buildah \
         bash -c "
-          cd $(pwd)
+          set -x
+          set -e
+          cd ${PWD}
+          mkdir -p ${PWD}/cache/pip
+          chown -R root:root ${PWD}/cache/pip
+          pip3 install --cache-dir ${PWD}/cache/pip -r requirements_dev.txt
+          pip3 install --cache-dir ${PWD}/cache/pip -r requirements.txt
           python3 setup.py install
-          pip3 install pytest pytest-azurepipelines
-          pytest tests
-        "
+          pip3 install git+https://github.com/Abstract-Tech/pytest-azurepipelines.git
+          cd tests
+          pytest --ignore-docstrings |grep -v codecoveragetool=Cobertura
+          exit \${PIPESTATUS[0]}"
     displayName: 'Run tests inside buildah image'
+
+  - script: |
+      sudo chown -Rv $(id -u) ${PWD}/cache ${PWD}/tests;
+      npm install juice
+      # Azure pipelines strips style sheets but leaves styles in place.
+      # juice can embed the styles in the HTML for us and present a much better
+      # view in the coverage results tab.
+      for filename in tests/htmlcov/*.html; do $(npm bin)/juice $filename $filename; done
+      echo "##vso[codecoverage.publish codecoveragetool=Cobertura;summaryfile=$(pwd)/tests/test-cov.xml;reportdirectory=${PWD}/tests/htmlcov;]"
+      ls -lR tests/htmlcov
+    displayName: Fix coverage result and publish it
+    condition: succeededOrFailed()
 
   - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
     inputs:
-      keyfile: 'derex/builder/openedx-alpine/.cache_id'
-      targetfolder: 'cache/'
+      keyfile: 'requirements*.txt'
+      targetfolder: 'cache'
+      verbosity: 'Trace'
       vstsFeed: '557705d2-c711-44d3-8c33-70cd77097d2e'
     condition: ne(variables['CacheRestored'], 'true')
 
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+    displayName: 'Use Python 3.7'
+    condition: succeededOrFailed()
+
+  - script: pip install --cache-dir ${PWD}/cache/pip -r requirements_dev.txt
+    displayName: 'Install dev tools'
+    condition: succeededOrFailed()
+
+  - script: isort -vb -rc --settings-path .isort.cf --check derex tests || true # For some reason on azure isort behaves differently than on my machine
+    displayName: 'Check isort compliance'
+    condition: succeededOrFailed()
+
+  - script: mypy derex tests --ignore-missing-imports
+    displayName: 'Check mypy compliance'
+    condition: succeededOrFailed()

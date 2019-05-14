@@ -1,13 +1,16 @@
 """Classes to build docker images using Buildah.
 """
+from .schema import buildah_schema
+from derex.builder import logger
 from derex.builder.builders.base import BaseBuilder
+from derex.builder.builders.base import create_builder
+from typing import Dict
+from typing import List
 from typing import Union
-import subprocess
-import json
-import os
-import logging
 
-logger = logging.getLogger(__name__)
+import json
+import logging
+import os
 
 
 class ImageFound:
@@ -15,37 +18,38 @@ class ImageFound:
 
 
 class BuildahBuilder(BaseBuilder):
+    json_schema = buildah_schema
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.scripts = self.conf['scripts']
-        self.source = self.conf['source']
-        self.dest = self.conf['dest'] + ':latest'
+        self.scripts = self.conf["scripts"]
+        self.source = self.conf["source"]
 
-    def validate(self):
-        """Check that all resources referenced from the yaml file actually exist.
+    def hash(self) -> str:
+        """Return a hash representing this builder.
+        The hash is built from the yaml configuration and the content of the scripts.
         """
+        elements = [
+            self.get_source_target(self.source, path=self.path),
+            self.hash_files(self.scripts),
+        ]
+        return self.mkhash("\n".join(elements))
 
-    def run(self) -> Union[ImageFound, None]:
-        images = json.loads(self.buildah('images', '--json'))
-        if f'localhost/{self.dest}' in sum((el['names'] for el in images if el['names']), []):
-            return ImageFound
-        container = self.buildah('from', self.source)
-        buildah = lambda cmd, *args: self.buildah(cmd, container, *args)
-        script_dir = '/opt/derex/bin'
-        buildah('run', 'mkdir', '-p', script_dir)
+    def build(self):
+        """Builds the image specified by this builder.
+        """
+        logger.info(f"Building {self.path}")
+        base_image = self.resolve_base_image(self.source, self.path)
+        container = self.buildah("from", base_image, print_output=False)
+        buildah_run = lambda *args: self.buildah_run(container, args)
+        script_dir = "/opt/derex/bin"
+        buildah_run("mkdir", "-p", script_dir)
         for script in self.scripts:
             src = os.path.join(self.path, script)
             dest = os.path.join(script_dir, script)
-            logger.info(buildah('copy', src, dest))
-            buildah('run', 'chmod', 'a+x', dest)
-            buildah('run', dest)
-        self.buildah('commit', '--rm', container, self.dest)
-        self.buildah('push', self.dest, f'docker-daemon:{self.dest}')
-        self.buildah('rmi', self.dest)
-
-    def buildah(self, *args):
-        """Utility function to invoke buildah
-        """
-        return subprocess.check_output(['sudo', 'buildah'] + list(args)).decode('utf-8').strip()
-
-
+            logger.info(self.buildah("copy", container, src, dest))
+            logger.info(f"Running {script}")
+            buildah_run("chmod", "a+x", dest)
+            buildah_run(dest)
+        logger.info(f"Finished running scripts")
+        self.buildah("commit", "--rm", container, self.dest)

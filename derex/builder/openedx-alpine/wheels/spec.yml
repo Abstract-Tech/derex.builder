@@ -1,0 +1,16 @@
+builder:
+  class: derex.builder.builders.BuildahWheelCompiler
+
+requirements:
+  - pre-requirements.txt
+  - requirements.txt
+
+sources:
+  builder:
+    type: derex-relative
+    path: buildwheels
+  base:
+    type: derex-relative
+    path: base
+
+dest: derex/openedx-alpine-wheels
