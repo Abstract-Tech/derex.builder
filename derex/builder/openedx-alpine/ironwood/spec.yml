@@ -1,0 +1,12 @@
+builder:
+  class: derex.builder.builders.BuildahBuilder
+
+source:
+  type: derex-relative
+  path: wheels
+
+scripts:
+  - install_openedx.sh
+#  - compile_assets.sh
+
+dest: derex/openedx-ironwood
