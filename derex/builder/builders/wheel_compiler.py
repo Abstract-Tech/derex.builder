@@ -59,6 +59,8 @@ class BuildahWheelCompiler(BaseBuilder):
 
     def hash(self):
         elements = [
+            self.__class__.__name__,
+            self.hash_conf(),
             self.get_source_target(self.sources["base"], path=self.path),
             self.get_source_target(self.sources["builder"], path=self.path),
             self.hash_files(self.requirements),

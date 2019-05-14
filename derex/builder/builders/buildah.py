@@ -30,6 +30,8 @@ class BuildahBuilder(BaseBuilder):
         The hash is built from the yaml configuration and the content of the scripts.
         """
         elements = [
+            self.__class__.__name__,
+            self.hash_conf(),
             self.get_source_target(self.source, path=self.path),
             self.hash_files(self.scripts),
         ]
