@@ -11,7 +11,6 @@ from typing import Union
 import json
 import logging
 import os
-import py.path
 
 
 class ImageFound:
@@ -50,17 +49,16 @@ class BuildahBuilder(BaseBuilder):
         script_dir = "/opt/derex/bin"
         buildah_run("mkdir", "-p", script_dir)
 
-        def copy(local_src, dest):
-            with py.path.local(self.path).as_cwd():
-                src = str(py.path.local(local_src))
-            logger.info(self.buildah("copy", container, src, dest))
+        def copy(src, dest):
+            logger.info(
+                self.buildah("copy", container, os.path.join(self.path, src), dest)
+            )
 
         for src, dest in self.copy.items():
             copy(src, dest)
         for script in self.scripts:
-            src = os.path.join(self.path, script)
             dest = os.path.join(script_dir, script)
-            copy(src, dest)
+            copy(script, dest)
             logger.info(f"Running {script}")
             buildah_run("chmod", "a+x", dest)
             buildah_run(dest)
