@@ -142,7 +142,7 @@ class BaseBuilder(ABC):
         """
         caches = self.ensure_caches()
         volumes: List[str] = []
-        for dest, source in caches.items():
+        for source, dest in caches.items():
             if source:
                 volumes += ["-v", f"{source}:{dest}"]
         return self.buildah(
