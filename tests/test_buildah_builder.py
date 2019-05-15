@@ -49,6 +49,7 @@ def test_caches(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     os.environ["PIP_CACHE"] = f"{tmp_path}/pip-alpine"
     buildah_base.ensure_caches()
     assert os.path.exists(os.environ["PIP_CACHE"])
+    del os.environ["PIP_CACHE"]
 
 
 @pytest.mark.slowtest
