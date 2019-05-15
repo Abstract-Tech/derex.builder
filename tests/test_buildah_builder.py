@@ -45,6 +45,12 @@ def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     assert buildah_base.hash() != initial
 
 
+def test_caches(buildah_base: BuildahBuilder, tmp_path: PosixPath):
+    os.environ["PIP_CACHE"] = f"{tmp_path}/pip-alpine"
+    buildah_base.ensure_caches()
+    assert os.path.exists(os.environ["PIP_CACHE"])
+
+
 @pytest.mark.slowtest
 @pytest.mark.buildah
 def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
@@ -109,3 +115,15 @@ def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixtur
 def buildah_base() -> BuildahBuilder:
     buildah_base_spec = get_builder_path("base")
     return BuildahBuilder(buildah_base_spec)
+
+
+def test_check_docker_registry(buildah_base: BuildahBuilder, mocker: MockFixture):
+    urlopen = mocker.patch("derex.builder.builders.base.urllib.request.urlopen")
+    response = mocker.Mock()
+    response.read.return_value = (
+        f'{{"token": "", "tags": ["{buildah_base.docker_tag()}"]}}'
+    )
+
+    urlopen.return_value = response
+
+    assert buildah_base.available_docker_registry()

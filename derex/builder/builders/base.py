@@ -142,9 +142,8 @@ class BaseBuilder(ABC):
         """
         caches = self.ensure_caches()
         volumes: List[str] = []
-        for dest, source in caches.items():
-            if source:
-                volumes += ["-v", f"{source}:{dest}"]
+        for source, dest in caches.items():
+            volumes += ["-v", f"{source}:{dest}"]
         return self.buildah(
             *(["run"] + list(extra_args) + volumes + [container] + list(args))
         )
@@ -157,13 +156,15 @@ class BaseBuilder(ABC):
             source = os.environ.get(varname)
             if source:
                 if not os.path.isdir(source):
-                    logger.warn(f"Creating cache directory {source}")
+                    logger.warning(f"Creating cache directory {source}")
                     try:
                         os.mkdir(source)
                         caches[source] = dest
                     except PermissionError:  # Please (xkcd #149)
-                        logger.warn(
-                            f"If you don't want to use this directory, specify a different one in the {varname} environment variable, or set the variable to an empty string to disable this feature"
+                        logger.warning(
+                            "If you don't want to use this directory, specify "
+                            f"a different one in the {varname} environment variable, "
+                            "or set the variable to an empty string to disable this feature"
                         )
                         try:
                             subprocess.check_output(("sudo", "mkdir", source))
