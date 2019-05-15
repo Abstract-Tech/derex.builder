@@ -17,9 +17,12 @@ cd /openedx/edx-platform
 pip install --src /openedx/packages -r requirements/edx/base.txt
 find /openedx/ -type d -name .git -exec rm -r {} +  # 70 Mb
 
+# Copy the assets.py config file in place
 mkdir -p /openedx/edx-platform/lms/envs/derex /openedx/edx-platform/cms/envs/derex
 cp /tmp/assets.py /openedx/edx-platform/lms/envs/derex
-mv /tmp/assets.py /openedx/edx-platform/lms/envs/derex
+echo > /openedx/edx-platform/lms/envs/derex/__init__.py
+mv /tmp/assets.py /openedx/edx-platform/cms/envs/derex
+echo > /openedx/edx-platform/cms/envs/derex/__init__.py
 
 # We prefer to do all tasks required for execution in advance,
 # so we accept the additional 57 Mb this brings

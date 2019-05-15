@@ -8,9 +8,9 @@ nodeenv /openedx/nodeenv --node=8.9.3 --prebuilt
 cd /openedx/edx-platform
 /openedx/nodeenv/bin/npm set progress=false
 /openedx/nodeenv/bin/npm install
-echo 'PATH=/openedx/edx-platform/node_modules/.bin:/openedx/nodeenv/bin:/openedx/bin:${PATH}'>>~/.profile
+echo PATH=/openedx/edx-platform/node_modules/.bin:/openedx/nodeenv/bin:/openedx/bin:\$\{PATH\}>>~/.profile
+PATH=/openedx/edx-platform/node_modules/.bin:/openedx/nodeenv/bin:/openedx/bin:${PATH}
 
-. ~/.profile
 cd /openedx/edx-platform
 openedx-assets xmodule
 openedx-assets npm
@@ -18,7 +18,7 @@ openedx-assets webpack --env=prod
 openedx-assets common
 
 openedx-assets themes
-openedx-assets collect --settings=derek.assets
+openedx-assets collect --settings=derex.assets
 
 # Free up some space
 rm -r \
