@@ -6,8 +6,7 @@ source:
   path: wheels
 
 copy:
-  settings/lms: /openedx/edx-platform/lms/envs/derex
-  settings/cms: /openedx/edx-platform/cms/envs/derex
+  assets.py: /tmp
   openedx-assets: /tmp/
 scripts:
   - install_openedx.sh

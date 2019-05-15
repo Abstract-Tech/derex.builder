@@ -8,7 +8,9 @@ from openedx.core.lib.derived import derive_settings
 
 COMPREHENSIVE_THEME_DIRS.append("/openedx/themes")
 STATIC_ROOT_BASE = "/openedx/staticfiles"
-STATIC_ROOT = path(STATIC_ROOT_BASE) / "studio"
+STATIC_ROOT = {"lms": path(STATIC_ROOT_BASE), "cms": path(STATIC_ROOT_BASE) / "studio"}[
+    SERVICE_VARIANT
+]
 WEBPACK_LOADER["DEFAULT"]["STATS_FILE"] = STATIC_ROOT / "webpack-stats.json"
 
 SECRET_KEY = "secret"
