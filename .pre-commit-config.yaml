@@ -12,6 +12,8 @@ repos:
     rev: 'v0.701'
     hooks:
     -   id: mypy
+        args:
+        - --ignore-missing-imports
 
 -   repo: https://github.com/ambv/black
     rev: stable
