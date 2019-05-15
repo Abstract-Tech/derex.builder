@@ -52,34 +52,28 @@ class BuildahWheelCompiler(BaseBuilder):
                 container=builder_container, args=list(args), extra_args=volumes
             )
             builder_run("mkdir", "-p", requirements_dir)
-            logger.info(builder_run("pip", "install", "wheel"))
+            builder_run("pip", "install", "wheel")
             for requirement in self.requirements:
                 src = os.path.join(self.path, requirement)
                 dest = os.path.join(requirements_dir, requirement)
-                logger.info(self.buildah("copy", builder_container, src, dest))
+                self.buildah("copy", builder_container, src, dest)
                 logger.info(f"Installing {requirement}")
                 logger.debug(open(src).read())
                 # If numpy is not installed scipy will refuse to compile.
                 # There is some build time potentially wasted. Maybe make it optional.
-                logger.info(builder_run(*"pip install -r".split(" "), dest))
+                builder_run(*"pip install -r".split(), dest)
                 logger.info(f"Compiling wheels for {requirement}")
                 wheel_cache_opts = (
                     "" if WHEELS_CACHE is None else "--find-links /wheels_cache"
                 )
-                logger.info(
-                    builder_run(
-                        *f"pip wheel {wheel_cache_opts} --wheel-dir=/wheelhouse -r".split(
-                            " "
-                        ),
-                        dest,
-                    )
+                builder_run(
+                    *f"pip wheel {wheel_cache_opts} --wheel-dir=/wheelhouse -r".split(),
+                    dest,
                 )
                 if WHEELS_CACHE is not None:
-                    logger.info(
-                        builder_run("sh", "-c", "cp -rv /wheelhouse/* /wheels_cache/")
-                    )
+                    builder_run("sh", "-c", "cp -rv /wheelhouse/* /wheels_cache/")
             logger.info(f"Created wheeels:\n{'n'.join(os.listdir(tmp_whs))}")
-            logger.info(base_run("sh", "-c", "pip install /wheelhouse/*"))
+            base_run("sh", "-c", "pip install /wheelhouse/*")
         self.buildah("commit", "--rm", base_container, self.dest)
         self.buildah("rm", builder_container)
 
