@@ -53,6 +53,9 @@ class BuildahWheelCompiler(BaseBuilder):
             )
             builder_run("mkdir", "-p", requirements_dir)
             builder_run("pip", "install", "wheel")
+            wheel_cache_opts = (
+                "" if WHEELS_CACHE is None else "--find-links /wheels_cache"
+            )
             for requirement in self.requirements:
                 src = os.path.join(self.path, requirement)
                 dest = os.path.join(requirements_dir, requirement)
@@ -61,11 +64,8 @@ class BuildahWheelCompiler(BaseBuilder):
                 logger.debug(open(src).read())
                 # If numpy is not installed scipy will refuse to compile.
                 # There is some build time potentially wasted. Maybe make it optional.
-                builder_run(*"pip install -r".split(), dest)
+                builder_run(*f"pip install {wheel_cache_opts} -r".split(), dest)
                 logger.info(f"Compiling wheels for {requirement}")
-                wheel_cache_opts = (
-                    "" if WHEELS_CACHE is None else "--find-links /wheels_cache"
-                )
                 builder_run(
                     *f"pip wheel {wheel_cache_opts} --wheel-dir=/wheelhouse -r".split(),
                     dest,
