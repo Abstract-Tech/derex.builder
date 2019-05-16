@@ -97,14 +97,10 @@ def test_dependent_container():
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
 
     buildah_dependent.build()
-    buildah_dependent.push_to_docker()
-    # Check the generated docker image
-    client = docker.from_env()
-    response = client.containers.run(
-        buildah_dependent.dest, "cat /hello_all.txt", remove=True
-    )
-    assert response == b"Greetings!\nHello all!\n"
-    client.images.remove(buildah_dependent.dest)
+    container = buildah_dependent.buildah("from", buildah_dependent.dest)
+    response = buildah_dependent.buildah("run", container, "cat", "/hello_all.txt")
+    assert response == "Hello all!"
+    buildah_dependent.buildah("rm", container)
 
 
 def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixture):
