@@ -39,7 +39,13 @@ def image(path: str):
     If stdout is not a tty omit the trailing newline.
     """
     # Print a newline only when connected to a tty
-    nl = os.isatty(sys.stdout.fileno())
+    try:
+        nl = os.isatty(sys.stdout.fileno())
+    except KeyboardInterrupt:
+        raise
+    except:
+        nl = False
+    logger.setLevel("CRITICAL")
     click.echo(create_builder(path).dest, nl=nl)
 
 

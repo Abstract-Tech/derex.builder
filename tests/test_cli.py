@@ -41,5 +41,6 @@ def test_command_image():
     runner = CliRunner()
     path = get_builder_path("base")
     builder = BuildahBuilder(path)
-    result = runner.invoke(cli.main, ["image", path])
+    result = runner.invoke(cli.main, ["image", path], catch_exceptions=False)
+    assert result.exception is None
     assert result.output.rstrip() == builder.dest
