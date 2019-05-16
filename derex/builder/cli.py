@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 """Console script for derex.builder."""
-import sys
-
-import click
-import click_log
+from . import arguments
+from . import logger
 from click.exceptions import Abort
 from derex.builder.builders.base import create_builder
 from jsonschema.exceptions import ValidationError
 
-from . import arguments, logger
+import click
+import click_log
+import os
+import sys
+
 
 click_log.basic_config(logger)
 
@@ -28,6 +30,23 @@ def resolve(path: str):
 
     click.echo(f"Building {path}")
     create_builder(path).resolve()
+
+
+@arguments.path
+@main.command()
+def image(path: str):
+    """Print a docker image identifier for the given builder.
+    If stdout is not a tty omit the trailing newline.
+    """
+    # Print a newline only when connected to a tty
+    try:
+        nl = os.isatty(sys.stdout.fileno())
+    except KeyboardInterrupt:
+        raise
+    except:
+        nl = False
+    logger.setLevel("CRITICAL")
+    click.echo(create_builder(path).dest, nl=nl)
 
 
 @arguments.path

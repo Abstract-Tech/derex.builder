@@ -24,12 +24,16 @@ class BuildahBuilder(BaseBuilder):
         super().__init__(*args, **kwargs)
         self.scripts = self.conf["scripts"]
         self.source = self.conf["source"]
+        self.copy = self.conf.get("copy", {})
 
     def hash(self) -> str:
         """Return a hash representing this builder.
-        The hash is built from the yaml configuration and the content of the scripts.
+        The hash is built from the yaml configuration, the content of the scripts
+        and the base config/image tag.
         """
         elements = [
+            self.__class__.__name__,
+            self.hash_conf(),
             self.get_source_target(self.source, path=self.path),
             self.hash_files(self.scripts),
         ]
@@ -44,10 +48,17 @@ class BuildahBuilder(BaseBuilder):
         buildah_run = lambda *args: self.buildah_run(container, args)
         script_dir = "/opt/derex/bin"
         buildah_run("mkdir", "-p", script_dir)
+
+        def copy(src, dest):
+            logger.info(
+                self.buildah("copy", container, os.path.join(self.path, src), dest)
+            )
+
+        for src, dest in self.copy.items():
+            copy(src, dest)
         for script in self.scripts:
-            src = os.path.join(self.path, script)
             dest = os.path.join(script_dir, script)
-            logger.info(self.buildah("copy", container, src, dest))
+            copy(script, dest)
             logger.info(f"Running {script}")
             buildah_run("chmod", "a+x", dest)
             buildah_run(dest)

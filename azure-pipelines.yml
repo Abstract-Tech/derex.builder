@@ -71,6 +71,6 @@ steps:
     displayName: 'Check isort compliance'
     condition: succeededOrFailed()
 
-  - script: mypy derex tests --ignore-missing-imports
+  - script: mypy derex tests
     displayName: 'Check mypy compliance'
     condition: succeededOrFailed()

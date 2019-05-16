@@ -21,7 +21,7 @@ import yaml
 
 
 CACHES = {
-    "/var/cache/pip-alpine": "PIP_CACHE",
+    "/root/.cache/pip": "PIP_CACHE",
     "/var/cache/apk": "APK_CACHE",
     "/var/cache/npm": "NPM_CACHE",
 }
@@ -207,12 +207,9 @@ class BaseBuilder(ABC):
 
     def hash_files(self, files: List[str]):
         """Given a list of files relative to the spec.yaml file,
-        return a hash that includes their contents and the contents of the specs.
+        return a hash based on their contents.
         """
-        texts = [self.hash_conf()]
-        for filename in files:
-            path = PosixPath(self.path, filename)
-            texts.append(path.read_text())
+        texts = [PosixPath(self.path, filename).read_text() for filename in files]
         return self.mkhash("\n".join(texts))
 
     @classmethod
