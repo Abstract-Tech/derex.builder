@@ -15,8 +15,9 @@ pointer = {
 BASE_PROPERTIES = {
     "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
     "dest": {"type": "string"},
+    "config": {"type": "object", "properties": {"entrypoint": {"type": "string"}}},
 }
-BASE_KEYS = list(BASE_PROPERTIES.keys())
+BASE_KEYS = ["builder", "dest"]
 
 buildah_schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",

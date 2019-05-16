@@ -23,7 +23,7 @@ def test_buildah_builder(buildah_base: BuildahBuilder):
     # Check the generated docker image
     client = docker.from_env()
     response = client.containers.run(buildah_base.dest, "cat /hello.txt", remove=True)
-    assert response == b"Hello world!\n"
+    assert response == b"Greetings!\nHello world!\n"
     client.images.remove(buildah_base.dest)
 
     images = buildah_base.list_buildah_images()
@@ -96,7 +96,7 @@ def test_dependent_container():
     response = client.containers.run(
         buildah_dependent.dest, "cat /hello_all.txt", remove=True
     )
-    assert response == b"Hello all!\n"
+    assert response == b"Greetings!\nHello all!\n"
     client.images.remove(buildah_dependent.dest)
 
 
