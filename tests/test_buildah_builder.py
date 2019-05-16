@@ -69,6 +69,11 @@ def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
     build.assert_not_called()
 
 
+def test_error_call(buildah_base):
+    with pytest.raises(RuntimeError):
+        buildah_base.buildah("foobar")
+
+
 def test_create_builder(buildah_base):
     from derex.builder.builders.base import create_builder, ConfigurationError
 

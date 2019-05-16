@@ -179,12 +179,14 @@ class BaseBuilder(ABC):
 
     def run(self, cmd):
         logger.info(f"executing {' '.join(cmd)}\n")
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        while True:
-            line = process.stdout.readline().decode("utf-8")
-            if not line:
-                break
-            yield line
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE) as process:
+            while True:
+                line = process.stdout.readline().decode("utf-8")
+                if not line:
+                    break
+                yield line
+        if process.returncode != 0:
+            raise RuntimeError()
 
     def docker_tag(self) -> str:
         """Returns a string usable as docker tag, derived from the hash.
