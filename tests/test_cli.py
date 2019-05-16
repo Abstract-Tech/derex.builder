@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """cli"""
+from .utils import get_builder_path
 from click.testing import CliRunner
 from derex.builder import cli
 from pytest_mock import MockFixture
-
-from .utils import get_builder_path
 
 
 def test_command_line_interface():
@@ -34,3 +33,13 @@ def test_command_validate():
         for conf in confs:
             result = runner.invoke(cli.main, ["validate", get_builder_path(conf)])
             assert result.exit_code == return_code
+
+
+def test_command_image():
+    from derex.builder.builders.buildah import BuildahBuilder
+
+    runner = CliRunner()
+    path = get_builder_path("base")
+    builder = BuildahBuilder(path)
+    result = runner.invoke(cli.main, ["image", path])
+    assert result.output.rstrip() == builder.dest
