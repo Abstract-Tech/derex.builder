@@ -12,34 +12,37 @@ pointer = {
         },
     ]
 }
+BASE_PROPERTIES = {
+    "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
+    "dest": {"type": "string"},
+}
+BASE_KEYS = list(BASE_PROPERTIES.keys())
 
 buildah_schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "required": ["builder", "source", "scripts", "dest"],
+    "required": ["source", "scripts"] + BASE_KEYS,
     "additionalProperties": False,
-    "properties": {
-        "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
-        "scripts": {"type": "array", "items": {"type": "string"}},
-        "source": pointer,
-        "dest": {"type": "string"},
-        "copy": {"type": "object"},
-    },
+    "properties": dict(
+        BASE_PROPERTIES,
+        scripts={"type": "array", "items": {"type": "string"}},
+        source=pointer,
+        copy={"type": "object"},
+    ),
 }
 
 wheel_compiler_schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "required": ["builder", "sources", "dest", "requirements"],
+    "required": ["sources", "requirements"] + BASE_KEYS,
     "additionalProperties": False,
-    "properties": {
-        "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
-        "requirements": {"type": "array", "items": pointer},
-        "sources": {
+    "properties": dict(
+        BASE_PROPERTIES,
+        requirements={"type": "array", "items": pointer},
+        sources={
             "type": "object",
             "required": ["builder", "base"],
             "properties": {"builder": pointer, "base": pointer},
         },
-        "dest": {"type": "string"},
-    },
+    ),
 }
