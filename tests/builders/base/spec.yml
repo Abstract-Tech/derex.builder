@@ -12,5 +12,6 @@ scripts:
 
 config:
   entrypoint: '["/entrypoint.sh"]'
+  workingdir: /usr/share/apk/keys/
 
 dest: derex/hello_world

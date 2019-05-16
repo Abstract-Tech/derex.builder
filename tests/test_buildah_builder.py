@@ -16,7 +16,7 @@ import pytest
 
 @pytest.mark.slowtest
 @pytest.mark.buildah
-def test_buildah_builder(buildah_base: BuildahBuilder):
+def test_buildah_builder_base(buildah_base: BuildahBuilder):
     buildah_base.build()
     buildah_base.push_to_docker()
 
@@ -24,6 +24,8 @@ def test_buildah_builder(buildah_base: BuildahBuilder):
     client = docker.from_env()
     response = client.containers.run(buildah_base.dest, "cat /hello.txt", remove=True)
     assert response == b"Greetings!\nHello world!\n"
+    response = client.containers.run(buildah_base.dest, "pwd", remove=True)
+    assert response == b"Greetings!\n/usr/share/apk/keys\n"
     client.images.remove(buildah_base.dest)
 
     images = buildah_base.list_buildah_images()

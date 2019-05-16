@@ -15,7 +15,13 @@ pointer = {
 BASE_PROPERTIES = {
     "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
     "dest": {"type": "string"},
-    "config": {"type": "object", "properties": {"entrypoint": {"type": "string"}}},
+    "config": {
+        "type": "object",
+        "properties": {
+            "entrypoint": {"type": "string"},
+            "workingdir": {"type": "string"},
+        },
+    },
 }
 BASE_KEYS = ["builder", "dest"]
 
