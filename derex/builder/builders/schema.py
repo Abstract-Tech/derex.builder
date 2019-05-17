@@ -21,6 +21,7 @@ BASE_PROPERTIES = {
         "properties": {
             "entrypoint": {"type": "string"},
             "workingdir": {"type": "string"},
+            "cmd": {"type": "string"},
             "env": {"type": "object", "patternProperties": {".*": {"type": "string"}}},
         },
     },
