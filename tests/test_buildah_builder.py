@@ -26,6 +26,11 @@ def test_buildah_builder_base(buildah_base: BuildahBuilder):
     assert response == b"Greetings!\nHello world!\n"
     response = client.containers.run(buildah_base.dest, "pwd", remove=True)
     assert response == b"Greetings!\n/usr/share/apk/keys\n"
+
+    response = client.containers.run(
+        buildah_base.dest, 'sh -c "echo $FOO"', remove=True
+    )
+    assert response == b"Greetings!\nbar\n"
     client.images.remove(buildah_base.dest)
 
     images = buildah_base.list_buildah_images()

@@ -66,5 +66,11 @@ class BuildahBuilder(BaseBuilder):
         logger.info(f"Finished running scripts")
         if self.config:
             for key, value in self.config.items():
-                self.buildah("config", f"--{key}", value, container)
+                if key == "env":
+                    for varname, varval in value.items():
+                        self.buildah(
+                            "config", f"--env", f"{varname}={varval}", container
+                        )
+                else:
+                    self.buildah("config", f"--{key}", value, container)
         self.buildah("commit", "--rm", container, self.dest)

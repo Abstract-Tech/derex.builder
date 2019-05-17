@@ -17,9 +17,11 @@ BASE_PROPERTIES = {
     "dest": {"type": "string"},
     "config": {
         "type": "object",
+        "additionalProperties": False,
         "properties": {
             "entrypoint": {"type": "string"},
             "workingdir": {"type": "string"},
+            "env": {"type": "object", "patternProperties": {".*": {"type": "string"}}},
         },
     },
 }
