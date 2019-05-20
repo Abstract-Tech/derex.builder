@@ -6,4 +6,4 @@ source: 12
 scripts:
   - hello_all.sh
 
-dest: derex/hello_everybody
+dest: derextests/hello_everybody

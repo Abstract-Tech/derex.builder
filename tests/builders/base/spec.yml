@@ -16,4 +16,4 @@ config:
   env:
     FOO: bar
 
-dest: derex/hello_world
+dest: derextests/hello_world

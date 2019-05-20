@@ -10,8 +10,12 @@ from pathlib import PosixPath
 from pytest_mock import MockFixture
 
 import docker
+import logging
 import os
 import pytest
+
+
+logger = logging.getLogger()
 
 
 @pytest.mark.slowtest
@@ -123,6 +127,24 @@ def test_sudo_only_if_necessary(mocker: MockFixture):
 def buildah_base() -> BuildahBuilder:
     buildah_base_spec = get_builder_path("base")
     return BuildahBuilder(buildah_base_spec)
+
+
+@pytest.fixture(autouse=True)
+def clean_up_images() -> None:
+    # Remove all containers derived from derextests images
+    for container in BuildahBuilder.buildah("ls").split("\n")[1:]:
+        container_info = container.split()
+        if len(container_info) != 5:
+            continue
+        container_id, _, _, image_name, container_name = container_info
+        if image_name.startswith("localhost/derextests"):
+            BuildahBuilder.buildah("rm", container_id)
+            logger.warn(f"Removed container {container_name}")
+
+    for image in BuildahBuilder.list_buildah_images():
+        if image.startswith("derextests"):
+            BuildahBuilder.buildah("rmi", image)
+            logger.warn(f"Removed image {image}")
 
 
 def test_check_docker_registry(buildah_base: BuildahBuilder, mocker: MockFixture):

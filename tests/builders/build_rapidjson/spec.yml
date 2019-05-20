@@ -8,4 +8,4 @@ source:
 scripts:
   - install_rapidjson_build_dependencies.sh
 
-dest: derex/buildwheels_rapidjson
+dest: derextests/buildwheels_rapidjson
