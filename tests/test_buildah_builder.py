@@ -34,7 +34,7 @@ def test_buildah_builder_base(buildah_base: BuildahBuilder):
     client.images.remove(buildah_base.dest)
 
     images = buildah_base.list_buildah_images()
-    assert f"library/{buildah_base.source}" in images
+    assert f"{buildah_base.source.replace('docker.io/', '')}" in images
 
 
 def test_hash_conf(buildah_base: BuildahBuilder):

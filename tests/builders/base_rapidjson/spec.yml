@@ -1,7 +1,7 @@
 builder:
   class: derex.builder.builders.BuildahBuilder
 
-source: python:3-alpine3.9
+source: docker.io/library/python:3-alpine3.9
 
 scripts:
   - install_rapidjson_run_dependencies.sh
