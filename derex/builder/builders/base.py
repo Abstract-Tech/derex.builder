@@ -31,9 +31,13 @@ class BaseBuilder(ABC):
     """A builder takes a configuration directory and executes it to build a docker image.
     """
 
+    _dest = None
+
     @property
     def dest(self):
-        return f'{self.conf["dest"]}:{self.docker_tag()}'
+        if self._dest is None:
+            self._dest = f'{self.conf["dest"]}:{self.docker_tag()}'
+        return self._dest
 
     def __init__(self, path: str):
         """
