@@ -253,7 +253,7 @@ class BaseBuilder(ABC):
         """
         if not isinstance(source, str):
             builder = create_builder(cls.resolve_source_path(source, path))
-            if resolve == True:
+            if resolve is True:
                 builder.resolve()
             return builder.dest
         else:

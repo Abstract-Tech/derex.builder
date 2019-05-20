@@ -95,7 +95,7 @@ def test_create_builder(buildah_base):
 
     buildah_invalid_spec = get_builder_path("invalid")
     with pytest.raises(ValidationError):
-        invalid = create_builder(buildah_invalid_spec)
+        create_builder(buildah_invalid_spec)
 
 
 @pytest.mark.slowtest

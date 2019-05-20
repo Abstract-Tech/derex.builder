@@ -43,7 +43,7 @@ def image(path: str):
         nl = os.isatty(sys.stdout.fileno())
     except KeyboardInterrupt:
         raise
-    except:
+    except Exception:
         nl = False
     logger.setLevel("CRITICAL")
     click.echo(create_builder(path).dest, nl=nl)
