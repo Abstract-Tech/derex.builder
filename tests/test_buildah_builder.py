@@ -100,7 +100,9 @@ def test_create_builder(buildah_base):
 
 @pytest.mark.slowtest
 @pytest.mark.buildah
-def test_dependent_container():
+def test_dependent_container(buildah_base: BuildahBuilder):
+    assert buildah_base.dest not in BuildahBuilder.list_buildah_images()
+
     # Make sure a trailing slash doesn't spoil the party
     buildah_dependent_spec = get_builder_path("dependent") + "/"
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
@@ -110,6 +112,8 @@ def test_dependent_container():
     response = BuildahBuilder.buildah("run", container, "cat", "/hello_all.txt")
     assert response == "Hello all!"
     BuildahBuilder.buildah("rm", container)
+    # Make sure the dependent image was also committed and tagged
+    assert buildah_base.dest in BuildahBuilder.list_buildah_images()
 
 
 def test_sudo_only_if_necessary(mocker: MockFixture):
