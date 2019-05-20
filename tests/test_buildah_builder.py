@@ -33,7 +33,7 @@ def test_buildah_builder_base(buildah_base: BuildahBuilder):
     assert response == b"Greetings!\nbar\n"
     client.images.remove(buildah_base.dest)
 
-    images = buildah_base.list_buildah_images()
+    images = BuildahBuilder.list_buildah_images()
     assert f"{buildah_base.source.replace('docker.io/', '')}" in images
 
 
@@ -76,9 +76,9 @@ def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
     build.assert_not_called()
 
 
-def test_error_call(buildah_base):
+def test_error_call():
     with pytest.raises(RuntimeError):
-        buildah_base.buildah("foobar")
+        BuildahBuilder.buildah("foobar")
 
 
 def test_create_builder(buildah_base):
@@ -102,20 +102,20 @@ def test_dependent_container():
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
 
     buildah_dependent.build()
-    container = buildah_dependent.buildah("from", buildah_dependent.dest)
-    response = buildah_dependent.buildah("run", container, "cat", "/hello_all.txt")
+    container = BuildahBuilder.buildah("from", buildah_dependent.dest)
+    response = BuildahBuilder.buildah("run", container, "cat", "/hello_all.txt")
     assert response == "Hello all!"
-    buildah_dependent.buildah("rm", container)
+    BuildahBuilder.buildah("rm", container)
 
 
-def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixture):
+def test_sudo_only_if_necessary(mocker: MockFixture):
     run = mocker.patch("derex.builder.builders.base.BaseBuilder.run")
     getuid = mocker.patch("derex.builder.builders.buildah.os.getuid")
     getuid.return_value = 1000
-    buildah_base.buildah()
+    BuildahBuilder.buildah()
     assert run.call_args[0][0] == ["sudo", "buildah"]
     getuid.return_value = 0
-    buildah_base.buildah()
+    BuildahBuilder.buildah()
     assert run.call_args[0][0] == ["buildah"]
 
 
