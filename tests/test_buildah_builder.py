@@ -10,24 +10,35 @@ from pathlib import PosixPath
 from pytest_mock import MockFixture
 
 import docker
+import logging
 import os
 import pytest
 
 
+logger = logging.getLogger()
+
+
 @pytest.mark.slowtest
 @pytest.mark.buildah
-def test_buildah_builder(buildah_base: BuildahBuilder):
+def test_buildah_builder_base(buildah_base: BuildahBuilder):
     buildah_base.build()
     buildah_base.push_to_docker()
 
     # Check the generated docker image
     client = docker.from_env()
     response = client.containers.run(buildah_base.dest, "cat /hello.txt", remove=True)
-    assert response == b"Hello world!\n"
+    assert response == b"Greetings!\nHello world!\n"
+    response = client.containers.run(buildah_base.dest, "pwd", remove=True)
+    assert response == b"Greetings!\n/usr/share/apk/keys\n"
+
+    response = client.containers.run(
+        buildah_base.dest, 'sh -c "echo $FOO"', remove=True
+    )
+    assert response == b"Greetings!\nbar\n"
     client.images.remove(buildah_base.dest)
 
-    images = buildah_base.list_buildah_images()
-    assert f"library/{buildah_base.source}" in images
+    images = BuildahBuilder.list_buildah_images()
+    assert f"{buildah_base.source.replace('docker.io/', '')}" in images
 
 
 def test_hash_conf(buildah_base: BuildahBuilder):
@@ -69,6 +80,11 @@ def test_resolve(buildah_base: BuildahBuilder, mocker: MockFixture):
     build.assert_not_called()
 
 
+def test_error_call():
+    with pytest.raises(RuntimeError):
+        BuildahBuilder.buildah("foobar")
+
+
 def test_create_builder(buildah_base):
     from derex.builder.builders.base import create_builder, ConfigurationError
 
@@ -79,35 +95,35 @@ def test_create_builder(buildah_base):
 
     buildah_invalid_spec = get_builder_path("invalid")
     with pytest.raises(ValidationError):
-        invalid = create_builder(buildah_invalid_spec)
+        create_builder(buildah_invalid_spec)
 
 
 @pytest.mark.slowtest
 @pytest.mark.buildah
-def test_dependent_container():
+def test_dependent_container(buildah_base: BuildahBuilder):
+    assert buildah_base.dest not in BuildahBuilder.list_buildah_images()
+
     # Make sure a trailing slash doesn't spoil the party
     buildah_dependent_spec = get_builder_path("dependent") + "/"
     buildah_dependent = BuildahBuilder(buildah_dependent_spec)
 
     buildah_dependent.build()
-    buildah_dependent.push_to_docker()
-    # Check the generated docker image
-    client = docker.from_env()
-    response = client.containers.run(
-        buildah_dependent.dest, "cat /hello_all.txt", remove=True
-    )
-    assert response == b"Hello all!\n"
-    client.images.remove(buildah_dependent.dest)
+    container = BuildahBuilder.buildah("from", buildah_dependent.dest)
+    response = BuildahBuilder.buildah("run", container, "cat", "/hello_all.txt")
+    assert response == "Hello all!"
+    BuildahBuilder.buildah("rm", container)
+    # Make sure the dependent image was also committed and tagged
+    assert buildah_base.dest in BuildahBuilder.list_buildah_images()
 
 
-def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixture):
+def test_sudo_only_if_necessary(mocker: MockFixture):
     run = mocker.patch("derex.builder.builders.base.BaseBuilder.run")
     getuid = mocker.patch("derex.builder.builders.buildah.os.getuid")
     getuid.return_value = 1000
-    buildah_base.buildah()
+    BuildahBuilder.buildah()
     assert run.call_args[0][0] == ["sudo", "buildah"]
     getuid.return_value = 0
-    buildah_base.buildah()
+    BuildahBuilder.buildah()
     assert run.call_args[0][0] == ["buildah"]
 
 
@@ -115,6 +131,24 @@ def test_sudo_only_if_necessary(buildah_base: BuildahBuilder, mocker: MockFixtur
 def buildah_base() -> BuildahBuilder:
     buildah_base_spec = get_builder_path("base")
     return BuildahBuilder(buildah_base_spec)
+
+
+@pytest.fixture(autouse=True)
+def clean_up_images() -> None:
+    # Remove all containers derived from derextests images
+    for container in BuildahBuilder.buildah("ls").split("\n")[1:]:
+        container_info = container.split()
+        if len(container_info) != 5:
+            continue
+        container_id, _, _, image_name, container_name = container_info
+        if image_name.startswith("localhost/derextests"):
+            BuildahBuilder.buildah("rm", container_id)
+            logger.warn(f"Removed container {container_name}")
+
+    for image in BuildahBuilder.list_buildah_images():
+        if image.startswith("derextests"):
+            BuildahBuilder.buildah("rmi", image)
+            logger.warn(f"Removed image {image}")
 
 
 def test_check_docker_registry(buildah_base: BuildahBuilder, mocker: MockFixture):

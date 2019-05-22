@@ -25,6 +25,7 @@ class BuildahBuilder(BaseBuilder):
         self.scripts = self.conf["scripts"]
         self.source = self.conf["source"]
         self.copy = self.conf.get("copy", {})
+        self.config = self.conf.get("config", {})
 
     def hash(self) -> str:
         """Return a hash representing this builder.
@@ -63,4 +64,13 @@ class BuildahBuilder(BaseBuilder):
             buildah_run("chmod", "a+x", dest)
             buildah_run(dest)
         logger.info(f"Finished running scripts")
+        if self.config:
+            for key, value in self.config.items():
+                if key == "env":
+                    for varname, varval in value.items():
+                        self.buildah(
+                            "config", f"--env", f"{varname}={varval}", container
+                        )
+                else:
+                    self.buildah("config", f"--{key}", value, container)
         self.buildah("commit", "--rm", container, self.dest)

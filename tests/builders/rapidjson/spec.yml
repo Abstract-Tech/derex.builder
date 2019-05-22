@@ -12,4 +12,4 @@ sources:
     type: derex-relative
     path: base_rapidjson
 
-dest: derex/rapidjson-wheel
+dest: derextests/rapidjson-wheel

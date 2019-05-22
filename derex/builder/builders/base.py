@@ -31,9 +31,13 @@ class BaseBuilder(ABC):
     """A builder takes a configuration directory and executes it to build a docker image.
     """
 
+    _dest = None
+
     @property
     def dest(self):
-        return f'{self.conf["dest"]}:{self.docker_tag()}'
+        if self._dest is None:
+            self._dest = f'{self.conf["dest"]}:{self.docker_tag()}'
+        return self._dest
 
     def __init__(self, path: str):
         """
@@ -111,44 +115,48 @@ class BaseBuilder(ABC):
         logger.debug(f"{self.dest} could not be found localy")
         return False
 
-    def list_buildah_images(self) -> List[str]:
+    @classmethod
+    def list_buildah_images(cls) -> List[str]:
         """Returns a list of all images locally available to buildah
         """
         # Get a list of all images
-        images = json.loads(self.buildah("images", "--json", print_output=False))
+        images = json.loads(cls.buildah("images", "--json", print_output=False))
         # Collect all their tags
         tags = sum((el["names"] for el in images if el["names"]), [])
 
         # Remove the first path component from image names
         return sorted([tag.split("/", 1)[1] for tag in tags])
 
-    def buildah(self, *args: str, print_output=True) -> str:
+    @classmethod
+    def buildah(cls, *args: str, print_output=True) -> str:
         """Utility function to invoke buildah
         """
         cmd = ["buildah"]
         if os.getuid() != 0:
             cmd = ["sudo"] + cmd
         res: List[str] = []
-        for line in self.run(cmd + list(args)):
+        for line in cls.run(cmd + list(args)):
             if print_output:
                 logger.info(line.rstrip())
             res += [line]
         return "".join(res).rstrip()
 
+    @classmethod
     def buildah_run(
-        self, container: str, args: List[str], extra_args: Union[List[str], Tuple] = ()
+        cls, container: str, args: List[str], extra_args: Union[List[str], Tuple] = ()
     ):
         """Runs a command inside the container after adding cache directories.
         """
-        caches = self.ensure_caches()
+        caches = cls.ensure_caches()
         volumes: List[str] = []
         for source, dest in caches.items():
             volumes += ["-v", f"{source}:{dest}"]
-        return self.buildah(
+        return cls.buildah(
             *(["run"] + list(extra_args) + volumes + [container] + list(args))
         )
 
-    def ensure_caches(self):
+    @classmethod
+    def ensure_caches(cls):
         """Make sure the cache directories exist.
         """
         caches = {}
@@ -177,14 +185,17 @@ class BaseBuilder(ABC):
                     caches[source] = dest
         return caches
 
-    def run(self, cmd):
-        logger.info(f"executing {' '.join(cmd)}\n")
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        while True:
-            line = process.stdout.readline().decode("utf-8")
-            if not line:
-                break
-            yield line
+    @classmethod
+    def run(cls, cmd):
+        logger.debug(f"executing {' '.join(cmd)}\n")
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE) as process:
+            while True:
+                line = process.stdout.readline().decode("utf-8")
+                if not line:
+                    break
+                yield line
+        if process.returncode != 0:
+            raise RuntimeError()
 
     def docker_tag(self) -> str:
         """Returns a string usable as docker tag, derived from the hash.
@@ -242,7 +253,7 @@ class BaseBuilder(ABC):
         """
         if not isinstance(source, str):
             builder = create_builder(cls.resolve_source_path(source, path))
-            if resolve == True:
+            if resolve is True:
                 builder.resolve()
             return builder.dest
         else:

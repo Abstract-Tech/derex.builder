@@ -1,12 +1,14 @@
-coverage
 black
+coverage
+flake8
+git+https://github.com/Abstract-Tech/pytest-black.git#egg=pytest-black
+git+https://github.com/Abstract-Tech/pytest-flake8.git#egg=pytest-flake8
 isort
 mypy
 pip
 pip-tools
 pre-commit
 pytest
-git+https://github.com/Abstract-Tech/pytest-black.git
 pytest-cov
 pytest-mock
 Sphinx
