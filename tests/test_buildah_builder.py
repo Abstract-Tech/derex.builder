@@ -21,6 +21,7 @@ logger = logging.getLogger()
 @pytest.mark.slowtest
 @pytest.mark.buildah
 def test_buildah_builder_base(buildah_base: BuildahBuilder):
+    os.environ["BUILD_VAR"] = "the build variable"
     buildah_base.build()
     buildah_base.push_to_docker()
 
@@ -30,6 +31,12 @@ def test_buildah_builder_base(buildah_base: BuildahBuilder):
     assert response == b"Greetings!\nHello world!\n"
     response = client.containers.run(buildah_base.dest, "pwd", remove=True)
     assert response == b"Greetings!\n/usr/share/apk/keys\n"
+
+    # Make sure environment variables were properly set during build
+    response = client.containers.run(
+        buildah_base.dest, "cat /build_var.txt", remove=True
+    )
+    assert response == b"Greetings!\nthe build variable\n"
 
     response = client.containers.run(
         buildah_base.dest, 'sh -c "echo $FOO"', remove=True

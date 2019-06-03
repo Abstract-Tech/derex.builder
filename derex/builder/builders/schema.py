@@ -15,6 +15,7 @@ pointer = {
 BASE_PROPERTIES = {
     "builder": {"type": "object", "properties": {"class": {"type": "string"}}},
     "dest": {"type": "string"},
+    "build_env": {"type": "array", "items": {"type": "string"}},
     "config": {
         "type": "object",
         "additionalProperties": False,

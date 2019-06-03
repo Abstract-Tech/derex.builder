@@ -46,6 +46,19 @@ class BuildahBuilder(BaseBuilder):
         logger.info(f"Building {self.path}")
         base_image = self.resolve_base_image(self.source, self.path)
         container = self.buildah("from", base_image, print_output=False)
+
+        # To support build-only variables we push them to the container config and
+        # re-set them to the empty value immediately before committing the container.
+        # TODO revisit if/when buildah supports `--env` in its `run` command.
+        set_env_opts = []
+        unset_env_opts = []
+        for name in self.conf.get("build_env", []):
+            value = os.environ.get(name)
+            if value is not None:
+                set_env_opts += ["--env", f"{name}={value}"]
+                unset_env_opts += ["--env", f"{name}="]
+        self.buildah("config", *set_env_opts + [container])
+
         buildah_run = lambda *args: self.buildah_run(container, args)
         script_dir = "/opt/derex/bin"
         buildah_run("mkdir", "-p", script_dir)
@@ -73,4 +86,9 @@ class BuildahBuilder(BaseBuilder):
                         )
                 else:
                     self.buildah("config", f"--{key}", value, container)
+
+        self.buildah(
+            "config", *unset_env_opts + [container]
+        )  # Unset build-only variables
+
         self.buildah("commit", "--rm", container, self.dest)
