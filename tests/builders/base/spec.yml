@@ -9,6 +9,10 @@ copy:
 
 scripts:
   - hello_world.sh
+  - dump_var.sh
+
+build_env:
+  - BUILD_VAR
 
 config:
   entrypoint: '["/entrypoint.sh"]'
