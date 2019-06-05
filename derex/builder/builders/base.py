@@ -3,6 +3,7 @@
 from abc import ABC
 from abc import abstractmethod
 from derex.builder import logger
+from functools import lru_cache
 from jsonschema import validate
 from pathlib import PosixPath
 from typing import Dict
@@ -267,6 +268,7 @@ class BaseBuilder(ABC):
         self.buildah("push", self.dest, f"docker-daemon:{self.dest}")
 
 
+@lru_cache()
 def create_builder(path: str) -> BaseBuilder:
     """Given a path to a builder configuration, it instantiates the relevant builder.
     """

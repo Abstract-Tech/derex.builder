@@ -43,7 +43,7 @@ class BuildahBuilder(BaseBuilder):
     def build(self):
         """Builds the image specified by this builder.
         """
-        logger.info(f"Building {self.path}")
+        logger.debug(f"Building {self.path}")
         base_image = self.resolve_base_image(self.source, self.path)
         container = self.buildah("from", base_image, print_output=False)
 
