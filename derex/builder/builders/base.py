@@ -44,7 +44,7 @@ class BaseBuilder(ABC):
         """
         :param file_path: A path to a directory containing a spec yaml file and other support files.
         """
-        logger.info(f"Instantiating builder for {path}")
+        logger.debug(f"Instantiating builder for {path}")
         self.path = self.sanitize_path(path)
         self.conf = load_conf(path)
         self.validate()
@@ -86,6 +86,8 @@ class BaseBuilder(ABC):
             else:
                 logger.info(f"Building {self.dest}")
                 self.build()
+        else:
+            logger.info(f"{self.dest} found locally")
 
     def available_docker_registry(self):
         # TODO: refator so this is available without calling `split`
@@ -111,7 +113,6 @@ class BaseBuilder(ABC):
         """Returns True if an image generated with this builder can be found in the local buildah registry.
         """
         if self.dest in self.list_buildah_images():
-            logger.debug(f"{self.dest} found localy")
             return True
         logger.debug(f"{self.dest} could not be found localy")
         return False

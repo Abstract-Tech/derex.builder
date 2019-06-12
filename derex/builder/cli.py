@@ -27,9 +27,9 @@ def main(args=None):
 def resolve(path: str):
     """Build a docker image based on a directory containing a spec.yml file.
     """
-
-    click.echo(f"Building {path}")
-    create_builder(path).resolve()
+    builder = create_builder(path)
+    click.echo(f"Resolving {path} to {builder.dest}")
+    builder.resolve()
 
 
 @arguments.path
