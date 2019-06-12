@@ -82,7 +82,7 @@ class BaseBuilder(ABC):
             logger.debug(f"Image {self.dest} not found locally")
             if self.available_docker_registry():
                 logger.info(f"Pulling {self.dest} from docker registry")
-                self.buildah("pull", self.dest)
+                self.buildah("pull", f"docker.io/{self.dest}")
             else:
                 logger.info(f"Building {self.dest}")
                 self.build()
