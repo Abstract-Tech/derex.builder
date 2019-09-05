@@ -4,8 +4,9 @@ from abc import ABC
 from abc import abstractmethod
 from derex.builder import logger
 from functools import lru_cache
+from functools import partial
 from jsonschema import validate
-from pathlib import PosixPath
+from pathlib import Path
 from typing import Dict
 from typing import List
 from typing import Tuple
@@ -16,6 +17,7 @@ from zope.dottedname.resolve import resolve
 import hashlib
 import json
 import os
+import re
 import subprocess
 import urllib.request
 import yaml
@@ -83,6 +85,7 @@ class BaseBuilder(ABC):
             if self.available_docker_registry():
                 logger.info(f"Pulling {self.dest} from docker registry")
                 self.buildah("pull", f"docker.io/{self.dest}")
+                self.buildah("tag", f"docker.io/{self.dest}", f"{self.dest}")
             else:
                 logger.info(f"Building {self.dest}")
                 self.build()
@@ -219,11 +222,13 @@ class BaseBuilder(ABC):
         return m.hexdigest()
 
     def hash_files(self, files: List[str]):
-        """Given a list of files relative to the spec.yaml file,
+        """Given a list of files or directories relative to the spec.yaml file,
         return a hash based on their contents.
         """
-        texts = [PosixPath(self.path, filename).read_text() for filename in files]
-        return self.mkhash("\n".join(texts))
+        file_paths = tuple(map(partial(Path, self.path), files))
+        texts = [path.read_text() for path in file_paths if path.is_file()]
+        dir_hashes = [get_dir_hash(str(path)) for path in file_paths if path.is_dir()]
+        return self.mkhash("\n".join(texts + dir_hashes))
 
     @classmethod
     def resolve_source_path(cls, source: Dict, path: str) -> str:
@@ -285,3 +290,53 @@ def load_conf(path: str) -> Dict:
 
 class ConfigurationError(Exception):
     pass
+
+
+def get_dir_hash(
+    dirname: Union[Path, str],
+    excluded_files: List = [],
+    ignore_hidden: bool = False,
+    followlinks: bool = False,
+    excluded_extensions: List = [],
+):
+    """Given a directory return an hash based on its contents.
+    Function lifted from checksumdir python package.
+    """
+    if not os.path.isdir(dirname):
+        raise TypeError(f"{dirname} is not a directory.")
+
+    hashvalues = []
+    for root, dirs, files in os.walk(dirname, topdown=True, followlinks=followlinks):
+        if ignore_hidden and re.search(r"/\.", root):
+            continue
+
+        dirs.sort()
+        files.sort()
+
+        for filename in files:
+            if ignore_hidden and filename.startswith("."):
+                continue
+
+            if filename.split(".")[-1:][0] in excluded_extensions:
+                continue
+
+            if filename in excluded_files:
+                continue
+
+            hasher = hashlib.sha256()
+            filepath = os.path.join(root, filename)
+            if not os.path.exists(filepath):
+                hashvalues.append(hasher.hexdigest())
+            else:
+                with open(filepath, "rb") as fileobj:
+                    while True:
+                        data = fileobj.read(64 * 1024)
+                        if not data:
+                            break
+                        hasher.update(data)
+                hashvalues.append(hasher.hexdigest())
+
+    hasher = hashlib.sha256()
+    for hashvalue in sorted(hashvalues):
+        hasher.update(hashvalue.encode("utf-8"))
+    return hasher.hexdigest()

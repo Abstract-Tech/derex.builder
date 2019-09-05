@@ -29,12 +29,13 @@ class BuildahBuilder(BaseBuilder):
 
     def hash(self) -> str:
         """Return a hash representing this builder.
-        The hash is built from the yaml configuration, the content of the scripts
-        and the base config/image tag.
+        The hash is built from the yaml configuration, the content of the scripts,
+        the copied files and the base config/image tag.
         """
         elements = [
             self.__class__.__name__,
             self.hash_conf(),
+            self.hash_files(self.copy.keys()),
             self.get_source_target(self.source, path=self.path),
             self.hash_files(self.scripts),
         ]

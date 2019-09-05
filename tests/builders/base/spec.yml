@@ -6,6 +6,8 @@ source: docker.io/library/alpine:3.9
 copy:
   exclamation_mark.txt: /exclamation_mark.txt
   entrypoint.sh: /entrypoint.sh
+  a_directory: /tmp/a_directory
+  another_directory: /tmp/another_directory
 
 scripts:
   - hello_world.sh

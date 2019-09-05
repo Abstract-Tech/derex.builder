@@ -6,13 +6,17 @@
 from .utils import get_builder_path
 from derex.builder.builders.buildah import BuildahBuilder
 from jsonschema.exceptions import ValidationError
+from pathlib import Path
 from pathlib import PosixPath
 from pytest_mock import MockFixture
+from typing import Iterator
 
 import docker
 import logging
 import os
 import pytest
+import shutil
+import tempfile
 
 
 logger = logging.getLogger()
@@ -61,6 +65,12 @@ def test_hash(buildah_base: BuildahBuilder, tmp_path: PosixPath):
     initial = buildah_base.hash()
     tmp_file.write_text("bar")
     assert buildah_base.hash() != initial
+
+
+def test_hash_files(buildah_base: BuildahBuilder):
+    initial = buildah_base.hash()
+    (Path(buildah_base.path) / "a_directory" / "a_file.txt").write_text("Changed")
+    assert BuildahBuilder(buildah_base.path).hash() != initial
 
 
 def test_caches(buildah_base: BuildahBuilder, tmp_path: PosixPath):
@@ -134,10 +144,14 @@ def test_sudo_only_if_necessary(mocker: MockFixture):
     assert run.call_args[0][0] == ["buildah"]
 
 
-@pytest.fixture
-def buildah_base() -> BuildahBuilder:
+@pytest.yield_fixture
+def buildah_base() -> Iterator[BuildahBuilder]:
+    """Return an editable copy of the base conf"""
     buildah_base_spec = get_builder_path("base")
-    return BuildahBuilder(buildah_base_spec)
+    spec_copy_path = tempfile.mkdtemp() + "/base"
+    shutil.copytree(buildah_base_spec, spec_copy_path)
+    yield BuildahBuilder(spec_copy_path)
+    shutil.rmtree(spec_copy_path)
 
 
 @pytest.fixture(autouse=True)
