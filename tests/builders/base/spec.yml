@@ -8,6 +8,7 @@ copy:
   entrypoint.sh: /entrypoint.sh
   a_directory: /tmp/a_directory
   another_directory: /tmp/another_directory
+  binary_file: /tmp/
 
 scripts:
   - hello_world.sh

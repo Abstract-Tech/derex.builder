@@ -214,11 +214,14 @@ class BaseBuilder(ABC):
         """
         return self.mkhash(json.dumps(self.conf, sort_keys=True))
 
-    def mkhash(self, input: str) -> str:
+    def mkhash(self, input: Union[str, bytes]) -> str:
         """Given a string, calculate its hash.
         """
         m = hashlib.sha256()
-        m.update(input.encode("utf-8"))
+        if isinstance(input, str):
+            m.update(input.encode("utf-8"))
+        else:
+            m.update(input)
         return m.hexdigest()
 
     def hash_files(self, files: List[str]):
@@ -226,9 +229,11 @@ class BaseBuilder(ABC):
         return a hash based on their contents.
         """
         file_paths = tuple(map(partial(Path, self.path), files))
-        texts = [path.read_text() for path in file_paths if path.is_file()]
+        text_hashes = [
+            self.mkhash(path.read_bytes()) for path in file_paths if path.is_file()
+        ]
         dir_hashes = [get_dir_hash(str(path)) for path in file_paths if path.is_dir()]
-        return self.mkhash("\n".join(texts + dir_hashes))
+        return self.mkhash("\n".join(text_hashes + dir_hashes))
 
     @classmethod
     def resolve_source_path(cls, source: Dict, path: str) -> str:
